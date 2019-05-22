@@ -6049,15 +6049,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:FXCM UK Trade Log"
-        "ProductCode" = "8:{436E4883-684D-4B9D-B044-929CDA63EC87}"
-        "PackageCode" = "8:{5D88A608-0C2A-4BC9-A4D2-5E4D843C3027}"
+        "ProductCode" = "8:{44877BFE-1912-49F9-86E8-B14EA940EBFF}"
+        "PackageCode" = "8:{863A5366-AEFD-4441-AF64-0A96FA2A8820}"
         "UpgradeCode" = "8:{F648D583-5CB3-4B1A-9F1A-8F762C5CF064}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:0.1.0"
+        "ProductVersion" = "8:0.2.0"
         "Manufacturer" = "8:Hallupa Ltd"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -6627,7 +6627,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_A62D9F7106FA4CAFAC4BDA2B77A534F8"
             {
-            "SourcePath" = "8:..\\TraderTools.TradeLog\\obj\\Release\\TraderTools.TradeLog.exe"
+            "SourcePath" = "8:..\\TraderTools.TradeLog\\obj\\x64\\Release\\TraderTools.TradeLog.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_5B67DF7EEAE046FD87022C4605E502EF"
