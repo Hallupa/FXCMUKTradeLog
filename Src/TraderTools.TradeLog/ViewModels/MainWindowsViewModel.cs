@@ -19,6 +19,13 @@ using TraderTools.Core.UI.Views;
 
 namespace TraderTools.TradeLog.ViewModels
 {
+    public enum PageToShow
+    {
+        Summary,
+        Trades,
+        Results
+    }
+
     public class MainWindowsViewModel : TradeViewModelBase, INotifyPropertyChanged
     {
         #region Fields
@@ -39,6 +46,7 @@ namespace TraderTools.TradeLog.ViewModels
         private BrokerAccount _account;
         private IDisposable _accountUpdatedObserver;
         private DispatcherTimer _saveTimer;
+        private PageToShow _page = PageToShow.Summary;
 
         #endregion
 
@@ -79,10 +87,12 @@ namespace TraderTools.TradeLog.ViewModels
             Broker = _fxcm;
             _brokersService.AddBrokers(brokers);
             _brokersService.LoadBrokerAccounts();
-            RefreshUI();
 
             _account = BrokersService.AccountsLookup[Broker];
-            _accountUpdatedObserver = _account.AccountUpdatedObservable.Subscribe(d => { RefreshUI(); });
+            _accountUpdatedObserver = _account.AccountUpdatedObservable.Subscribe(d =>
+                {
+                    _dispatcher.Invoke(RefreshUI);
+                });
 
             _createLoginViewFunc = createLoginViewFunc;
             _createProgressingViewFunc = createProgressingViewFunc;
@@ -132,12 +142,28 @@ namespace TraderTools.TradeLog.ViewModels
                 AdvStrategyNaming = true
             };
 
+            SummaryViewModel = new SummaryViewModel();
+
             Trades.CollectionChanged += TradesOnCollectionChanged;
+
+            RefreshUI();
         }
 
         #region Properties
 
+        public PageToShow Page
+        {
+            get { return _page; }
+            set
+            {
+                _page = value;
+                OnPropertyChanged();
+            }
+        }
+
         public TradesResultsViewModel ResultsViewModel { get; }
+
+        public SummaryViewModel SummaryViewModel { get; }
 
         public bool UpdateAccountEnabled => !_updatingAccount;
 
@@ -206,6 +232,8 @@ namespace TraderTools.TradeLog.ViewModels
                     Log.Info("Trades updated");
                     SaveTrades();
 
+                    SummaryViewModel.Update(Trades.ToList());
+
                     progressViewActions.close();
                 });
             });
@@ -239,19 +267,17 @@ namespace TraderTools.TradeLog.ViewModels
 
         private void RefreshUI()
         {
-            _dispatcher.BeginInvoke((Action)(() =>
+            Trades.Clear();
+
+            foreach (var trade in _account.Trades
+                .Where(x => x.OrderDateTime != null || x.EntryDateTime != null)
+                .OrderByDescending(x => int.Parse(x.Id)))
             {
-                Trades.Clear();
+                Trades.Add(trade);
+            }
 
-                foreach (var trade in _account.Trades
-                    .Where(x => x.OrderDateTime != null || x.EntryDateTime != null)
-                    .OrderByDescending(x => int.Parse(x.Id)))
-                {
-                    Trades.Add(trade);
-                }
-
-                ResultsViewModel.UpdateResults();
-            }));
+            ResultsViewModel.UpdateResults();
+            SummaryViewModel.Update(Trades.ToList());
         }
 
         private void LoginOut()

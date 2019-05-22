@@ -29,6 +29,8 @@ namespace TraderTools.TradeLog
         {
             InitializeComponent();
 
+            Title = Title + $" {typeof(MainWindow).Assembly.GetName().Version}";
+
             DependencyContainer.ComposeParts(this);
 
 #if DEBUG
@@ -66,26 +68,33 @@ namespace TraderTools.TradeLog
 
             Task.Run(() =>
             {
-                var github = new GitHubClient(new ProductHeaderValue("Hallupa"));
-                var releases = github.Repository.Release.GetAll("Hallupa", "FXCMUKTradeLog").Result;
-
-                if (releases.Count > 0)
+                try
                 {
-                    var latestReleaseVersion = releases[0].TagName.Replace("v", "");
-                    var assemblyVersion = typeof(MainWindow).Assembly.GetName().Version;
-                    var currentVersion = $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}";
+                    var github = new GitHubClient(new ProductHeaderValue("Hallupa"));
+                    var releases = github.Repository.Release.GetAll("Hallupa", "FXCMUKTradeLog").Result;
 
-                    if (latestReleaseVersion != currentVersion)
+                    if (releases.Count > 0)
                     {
-                        Dispatcher.Invoke(() =>
+                        var latestReleaseVersion = releases[0].TagName.Replace("v", "");
+                        var assemblyVersion = typeof(MainWindow).Assembly.GetName().Version;
+                        var currentVersion = $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}";
+
+                        if (latestReleaseVersion != currentVersion)
                         {
-                            MessageBox.Show(
-                                "Newer version is available - please download from https://github.com/Hallupa/FXCMUKTradeLog",
-                                "Newer version available",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Information);
-                        });
+                            Dispatcher.Invoke(() =>
+                            {
+                                MessageBox.Show(
+                                    "Newer version is available - please download from https://github.com/Hallupa/FXCMUKTradeLog",
+                                    "Newer version available",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Information);
+                            });
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    Log.Warn($"Unable to check GitHub releases");
                 }
             });
         }
