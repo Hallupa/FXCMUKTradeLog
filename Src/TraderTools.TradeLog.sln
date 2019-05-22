@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28803.156
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2041
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderTools.TradeLog", "TraderTools.TradeLog\TraderTools.TradeLog.csproj", "{BB5570BA-9B65-42AF-A0A2-9BE6945C9AC3}"
 EndProject
@@ -20,6 +20,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderTools.Brokers.FXCM", "..\Common\Src\TraderTools.Brokers.FXCM\TraderTools.Brokers.FXCM.csproj", "{89047D98-156E-4BA0-B71E-121F7E26806E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderTools.Core", "..\Common\Src\TraderTools.Core\TraderTools.Core.csproj", "{DF376238-6A60-4FA6-AF06-00982E7CD525}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "TradeLogInstaller", "TradeLogInstaller\TradeLogInstaller.vdproj", "{9EC1C2EB-1DB7-4478-BECA-D782DCE447BB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -127,6 +129,12 @@ Global
 		{DF376238-6A60-4FA6-AF06-00982E7CD525}.Release|x64.Build.0 = Release|x64
 		{DF376238-6A60-4FA6-AF06-00982E7CD525}.Release|x86.ActiveCfg = Release|Any CPU
 		{DF376238-6A60-4FA6-AF06-00982E7CD525}.Release|x86.Build.0 = Release|Any CPU
+		{9EC1C2EB-1DB7-4478-BECA-D782DCE447BB}.Debug|Any CPU.ActiveCfg = Debug
+		{9EC1C2EB-1DB7-4478-BECA-D782DCE447BB}.Debug|x64.ActiveCfg = Debug
+		{9EC1C2EB-1DB7-4478-BECA-D782DCE447BB}.Debug|x86.ActiveCfg = Debug
+		{9EC1C2EB-1DB7-4478-BECA-D782DCE447BB}.Release|Any CPU.ActiveCfg = Release
+		{9EC1C2EB-1DB7-4478-BECA-D782DCE447BB}.Release|x64.ActiveCfg = Release
+		{9EC1C2EB-1DB7-4478-BECA-D782DCE447BB}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

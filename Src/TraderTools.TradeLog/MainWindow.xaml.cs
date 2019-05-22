@@ -2,9 +2,11 @@
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows;
 using Hallupa.Library;
 using log4net;
+using Octokit;
 using TraderTools.Core.Services;
 using TraderTools.TradeLog.ViewModels;
 using TraderTools.TradeLog.Views;
@@ -61,6 +63,31 @@ namespace TraderTools.TradeLog
 
             DataContext = _vm;
             Closing += OnClosing;
+
+            Task.Run(() =>
+            {
+                var github = new GitHubClient(new ProductHeaderValue("Hallupa"));
+                var releases = github.Repository.Release.GetAll("Hallupa", "FXCMUKTradeLog").Result;
+
+                if (releases.Count > 0)
+                {
+                    var latestReleaseVersion = releases[0].TagName.Replace("v", "");
+                    var assemblyVersion = typeof(MainWindow).Assembly.GetName().Version;
+                    var currentVersion = $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}";
+
+                    if (latestReleaseVersion != currentVersion)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            MessageBox.Show(
+                                "Newer version is available - please download from https://github.com/Hallupa/FXCMUKTradeLog",
+                                "Newer version available",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Information);
+                        });
+                    }
+                }
+            });
         }
 
         private void OnClosing(object sender, CancelEventArgs cancelEventArgs)
