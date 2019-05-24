@@ -21,7 +21,7 @@ namespace TraderTools.TradeLog
         {
             Log.Info("Starting application");
 
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Hallupa\FXCMTradeLog");
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"FXCMTradeLog");
             BrokersService.DataDirectory = path;
             BrokersCandlesService.EarliestDateTime = new DateTime(2016, 1, 1);
 
