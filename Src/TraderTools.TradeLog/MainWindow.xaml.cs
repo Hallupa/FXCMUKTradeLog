@@ -4,6 +4,7 @@ using System.ComponentModel.Composition;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 using Hallupa.Library;
 using log4net;
 using Octokit;
@@ -66,37 +67,63 @@ namespace TraderTools.TradeLog
             DataContext = _vm;
             Closing += OnClosing;
 
-            Task.Run(() =>
+            Loaded += MainWindow_Loaded;
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            Dispatcher.CurrentDispatcher.BeginInvoke((Action)(() =>
             {
-                try
+                if (Properties.Settings.Default.ShowInfoWindow)
                 {
-                    var github = new GitHubClient(new ProductHeaderValue("Hallupa"));
-                    var releases = github.Repository.Release.GetAll("Hallupa", "FXCMUKTradeLog").Result;
-
-                    if (releases.Count > 0)
+                    var infoWindow = new InfoView
                     {
-                        var latestReleaseVersion = releases[0].TagName.Replace("v", "");
-                        var assemblyVersion = typeof(MainWindow).Assembly.GetName().Version;
-                        var currentVersion = $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}";
+                        Owner = this
+                    };
 
-                        if (latestReleaseVersion != currentVersion)
-                        {
-                            Dispatcher.Invoke(() =>
-                            {
-                                MessageBox.Show(
-                                    "Newer version is available - please download from https://github.com/Hallupa/FXCMUKTradeLog",
-                                    "Newer version available",
-                                    MessageBoxButton.OK,
-                                    MessageBoxImage.Information);
-                            });
-                        }
+                    infoWindow.ShowDialog();
+
+                    if (infoWindow.DoNotShowAgainCheckBox.IsChecked == true)
+                    {
+                        Properties.Settings.Default.ShowInfoWindow = false;
+                        Properties.Settings.Default.Save();
                     }
                 }
-                catch (Exception ex)
+
+                Task.Run(CheckForNewerVersion);
+            }));
+        }
+
+        private void CheckForNewerVersion()
+        {
+            try
+            {
+                var github = new GitHubClient(new ProductHeaderValue("Hallupa"));
+                var releases = github.Repository.Release.GetAll("Hallupa", "FXCMUKTradeLog").Result;
+
+                if (releases.Count > 0)
                 {
-                    Log.Warn($"Unable to check GitHub releases");
+                    var latestReleaseVersion = releases[0].TagName.Replace("v", "");
+                    var assemblyVersion = typeof(MainWindow).Assembly.GetName().Version;
+                    var currentVersion = $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}";
+
+                    if (latestReleaseVersion != currentVersion)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            MessageBox.Show(
+                                "Newer version is available - please download from https://github.com/Hallupa/FXCMUKTradeLog",
+                                "Newer version available",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Information);
+                        });
+                    }
                 }
-            });
+            }
+            catch (Exception ex)
+            {
+                Log.Warn($"Unable to check GitHub releases");
+            }
         }
 
         private void OnClosing(object sender, CancelEventArgs cancelEventArgs)

@@ -1,0 +1,45 @@
+﻿<Window x:Class="TraderTools.TradeLog.Views.InfoView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TraderTools.TradeLog.Views"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
+        mc:Ignorable="d"
+        Title="FXCM API limitations" Height="450" Width="400" WindowStartupLocation="CenterOwner" Name="window">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <RichTextBox IsReadOnly="True">
+            <FlowDocument>
+                <Paragraph>The application uses the FXCM API to import user trades but this does have some limitations.</Paragraph>
+                <Paragraph>
+                    <Bold>Closed trades</Bold>
+                    <LineBreak/>
+                    FXCM API doesn't provide details of stops/limits for closed trades.
+                    <LineBreak/>
+                    It is recommended that trades are imported into the trade log when they are still open so their stops/limits can be imported also.
+                </Paragraph>
+                <Paragraph>
+                    <Bold>Open trades</Bold>
+                    <LineBreak/>
+                    FXCM API provides only the current stop/limit for open trades so if the stop/limit is changed multiple times, FXCM will only report the current stop/limit.
+                    <LineBreak/>
+                    It is recommended that whenever a trade has its stop/limit changed, trade log is updated with the FXCM account to ensure every stop/limit change is imported.
+                </Paragraph>
+            </FlowDocument>
+        </RichTextBox>
+        <CheckBox Grid.Row="1" Content="Don't show this message again" x:Name="DoNotShowAgainCheckBox"/>
+        <Button Grid.Row="2" Content="OK" HorizontalAlignment="Center" Margin="3" Padding="20,1,20,1" IsDefault="True">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                    <ei:CallMethodAction TargetObject="{Binding ElementName=window}" MethodName="Close"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </Button>
+    </Grid>
+</Window>

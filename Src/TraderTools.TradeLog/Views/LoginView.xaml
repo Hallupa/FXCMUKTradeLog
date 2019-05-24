@@ -18,7 +18,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Label Grid.Row="0" Grid.Column="0" Margin="3">Username</Label>
+        <Label Grid.Row="0" Grid.Column="0" Margin="3">Login</Label>
         <TextBox Grid.Row="0" Grid.Column="1" Margin="3" x:Name="UsernameTextBox" Text="{Binding Username}"/>
 
         <Label Grid.Row="1" Grid.Column="0" Margin="3">Password</Label>
