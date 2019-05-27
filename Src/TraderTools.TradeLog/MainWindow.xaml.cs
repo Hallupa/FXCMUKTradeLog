@@ -68,6 +68,9 @@ namespace TraderTools.TradeLog
             Closing += OnClosing;
 
             Loaded += MainWindow_Loaded;
+
+            Height = SystemParameters.PrimaryScreenHeight * 0.70;
+            Width = Height * 1.5;
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)

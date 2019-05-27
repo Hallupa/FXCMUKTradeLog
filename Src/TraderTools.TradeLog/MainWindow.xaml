@@ -12,7 +12,7 @@
         xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
         xmlns:viewModels="clr-namespace:TraderTools.TradeLog.ViewModels"
         mc:Ignorable="d"
-        Title="FXCM UK Trade log" Height="800" Width="1100">
+        Title="FXCM UK Trade log" Height="800" Width="1100" WindowStartupLocation="CenterScreen">
 
     <Grid>
         <Grid.Resources>
@@ -26,12 +26,17 @@
         </Grid.RowDefinitions>
 
         <Ribbon x:Name="RibbonWin" Grid.Row="0" SelectedIndex="0">
+            <Ribbon.Resources>
+                <Style TargetType="RibbonTabHeaderItemsControl">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </Style>
+            </Ribbon.Resources>
             <Ribbon.ApplicationMenu>
                 <RibbonApplicationMenu Visibility="Collapsed">
                 </RibbonApplicationMenu>
             </Ribbon.ApplicationMenu>
 
-            <RibbonTab Header="Page">
+            <RibbonTab>
                 <RibbonGroup Header="FXCM">
                     <RibbonButton Label="{Binding LoginOutButtonText}" Command="{Binding LoginOutCommand}"/>
                     <RibbonButton Label="{Binding UpdateAccountButtonText}" Command="{Binding UpdateAccountCommand}" IsEnabled="{Binding UpdateAccountEnabled}"></RibbonButton>

@@ -67,12 +67,11 @@ namespace TraderTools.TradeLog.ViewModels
             _saveTimer.Stop();
 
             TradeListDisplayOptions = TradeListDisplayOptionsFlag.PoundsPerPip
-                                      | TradeListDisplayOptionsFlag.InitialStop
-                                      | TradeListDisplayOptionsFlag.InitialLimit
+                                      | TradeListDisplayOptionsFlag.Stop
+                                      | TradeListDisplayOptionsFlag.Limit
                                       | TradeListDisplayOptionsFlag.OrderPrice
                                       | TradeListDisplayOptionsFlag.Comments
-                                      | TradeListDisplayOptionsFlag.ResultR
-                                      | TradeListDisplayOptionsFlag.Broker;
+                                      | TradeListDisplayOptionsFlag.ResultR;
 
             _loginOutButtonText = "Login";
             _dispatcher = Dispatcher.CurrentDispatcher;

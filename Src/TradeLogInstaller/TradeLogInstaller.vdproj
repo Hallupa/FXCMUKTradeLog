@@ -1916,6 +1916,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.6.1"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.6.1 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.6.1"
+                    }
+                }
             }
         }
         "Release"
@@ -1940,6 +1948,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.6.1"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.6.1 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.6.1"
+                    }
+                }
             }
         }
     }
@@ -6409,15 +6425,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:FXCM UK Trade Log"
-        "ProductCode" = "8:{98FA8E2E-88BE-4DDA-BA66-729D1667FD83}"
-        "PackageCode" = "8:{3D8491A4-48A7-43C5-80EB-5F4E9069027F}"
+        "ProductCode" = "8:{A5E392E3-2CDA-45CD-8F52-28FCCC23422A}"
+        "PackageCode" = "8:{D35C29BF-ACD7-4D96-9EC9-87CC8ABFD107}"
         "UpgradeCode" = "8:{F648D583-5CB3-4B1A-9F1A-8F762C5CF064}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:0.3.0"
+        "ProductVersion" = "8:0.4.0"
         "Manufacturer" = "8:Hallupa Ltd"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
