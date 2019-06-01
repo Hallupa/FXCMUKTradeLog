@@ -17,13 +17,14 @@ When TradeLog is open, for most actions to work you will need to be logged into 
 ## Update trades
 Once logged-in, clicking 'Update account' will download all FXCM trades. This may take a few minutes as candle prices may also be downloaded so the GBP/point can also be calculated.
 ## Summary screen
-![Screenshot](https://github.com/Hallupa/FXCMUKTradeLog/blob/master/Docs/Images/SummaryScreen.png)
+![Screenshot](https://github.com/Hallupa/FXCMUKTradeLog/blob/master/Docs/Images/SummaryScreen.PNG)
 The summary screen displays completed trades' profits, total profit over time from completed trades, etc.
 ## Trades screen
-![Screenshot](https://github.com/Hallupa/FXCMUKTradeLog/blob/master/Docs/Images/ResultsScreen.png)
-Trades are grouped here to show results. Using the dropdown list, they can be grouped by month, strategy, market, etc.
+![Screenshot](https://github.com/Hallupa/FXCMUKTradeLog/blob/master/Docs/Images/TradesScreen.PNG)
+All trades are shown here. Each trade can be assigned to a strategy or strategies, annotated, viewed on chart, etc.
 ## Results screen
-![Screenshot](https://github.com/Hallupa/FXCMUKTradeLog/blob/master/Docs/Images/TradesScreen.png)
+![Screenshot](https://github.com/Hallupa/FXCMUKTradeLog/blob/master/Docs/Images/ResultsScreen.PNG)
+Trades are grouped here to show results. Using the dropdown list, they can be grouped by month, strategy, market, etc.
 
 # Limitations
 The application uses the FXCM API to import user trades but this API does have some limitations
