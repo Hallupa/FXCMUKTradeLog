@@ -138,7 +138,9 @@ namespace TraderTools.TradeLog.ViewModels
             })
             {
                 ShowProfit = true,
-                AdvStrategyNaming = true
+                AdvStrategyNaming = true,
+                ShowSubOptions = false,
+                SubItemsIndex = 1
             };
 
             SummaryViewModel = new SummaryViewModel();
