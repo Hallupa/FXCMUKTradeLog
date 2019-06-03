@@ -7,7 +7,7 @@ The application imports trades directly from FXCM UK - once imported, trades can
 * Viewed on a chart
 * Annotated
 * Allocated to strategies
-* Analysed based on success rate, expectancy, R multiple, etc for all trades/monthly/per strategy/etc
+* Analysed based on success rate, expectancy, R multiple, etc. This can be displayed for all trades, by month or per strategy.
 
 # Installation
 1. Download latest version from https://github.com/Hallupa/FXCMUKTradeLog/releases
@@ -18,10 +18,10 @@ When TradeLog is open, for most actions to work you will need to be logged into 
 ## Update trades
 Once logged-in, clicking 'Update account' will download all FXCM trades. This may take a few minutes as candle prices may also be downloaded so the GBP/point can also be calculated.
 ## Summary screen
-The summary screen displays completed trades' profits, total profit over time from completed trades, etc.
+The summary screen displays completed trades' profits, total profit over time from completed trades, and some overall statistics.
 ![Screenshot](https://github.com/Hallupa/FXCMUKTradeLog/blob/master/Docs/Images/SummaryScreen.PNG)
 ## Trades screen
-All trades are shown here. Each trade can be assigned to a strategy or strategies, annotated, viewed on chart, etc.
+All trades are shown here. Each trade can be assigned to strategies, annotated and viewed on chart.
 ![Screenshot](https://github.com/Hallupa/FXCMUKTradeLog/blob/master/Docs/Images/TradesScreen.PNG)
 ## Results screen
 Trades are grouped here to show results. Using the dropdown list, they can be grouped by month, strategy, market, etc.
