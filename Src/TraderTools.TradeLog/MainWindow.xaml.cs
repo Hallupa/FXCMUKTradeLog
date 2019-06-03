@@ -93,7 +93,7 @@ namespace TraderTools.TradeLog
                     }
                 }
 
-                Task.Run(CheckForNewerVersion);
+                Task.Run((Action)CheckForNewerVersion);
             }));
         }
 
