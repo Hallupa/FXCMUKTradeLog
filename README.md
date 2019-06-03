@@ -1,6 +1,6 @@
 # FXCM UK TradeLog
 
-## FXCM UK TradeLog is a tradelog for FXCM UK. It imports trades using FXCM's API and provides analysis.
+## FXCM UK TradeLog is a tradelog which can import trades from FXCM and provide analysis.
 ![Screenshot](https://github.com/Hallupa/FXCMUKTradeLog/blob/master/Docs/Images/TradesScreen.PNG)
 
 The application imports trades directly from FXCM UK - once imported, trades can be:
