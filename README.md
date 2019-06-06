@@ -11,7 +11,8 @@ The application imports trades directly from FXCM UK - once imported, trades can
 
 # Installation
 1. Download latest version from https://github.com/Hallupa/FXCMUKTradeLog/releases
-2. Run 'TradeLogInstaller.msi' which will install the application along with shortcuts on the desktop and start menu. The application is called 'FXCM UK Trade Log'
+2. TradeLog uses FXCM's ForexConnect API - **this isn't enabled by default on each FXCM account so you will need to email api@fxcm.com and ask for ForexConnect API to be enabled**
+3. Run 'TradeLogInstaller.msi' which will install the application along with shortcuts on the desktop and start menu. The application is called 'FXCM UK Trade Log'
 
 # How to use
 When TradeLog is open, for most actions to work you will need to be logged into your FXCM account. Click 'Login' to do this (Note that TradeLog does not store the password for security)
