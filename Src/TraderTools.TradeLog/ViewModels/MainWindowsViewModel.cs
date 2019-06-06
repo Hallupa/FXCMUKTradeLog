@@ -82,7 +82,8 @@ namespace TraderTools.TradeLog.ViewModels
                                       | TradeListDisplayOptionsFlag.Limit
                                       | TradeListDisplayOptionsFlag.OrderPrice
                                       | TradeListDisplayOptionsFlag.Comments
-                                      | TradeListDisplayOptionsFlag.ResultR;
+                                      | TradeListDisplayOptionsFlag.ResultR
+                                      | TradeListDisplayOptionsFlag.ClosePrice;
 
             _loginOutButtonText = "Login";
             _dispatcher = Dispatcher.CurrentDispatcher;
