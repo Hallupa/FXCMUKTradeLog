@@ -47,6 +47,7 @@ namespace TraderTools.TradeLog.ViewModels
         private IDisposable _accountUpdatedObserver;
         private DispatcherTimer _saveTimer;
         private PageToShow _page = PageToShow.Summary;
+        private bool _editingTrade;
 
         #endregion
 
@@ -60,8 +61,18 @@ namespace TraderTools.TradeLog.ViewModels
                 (o, args) =>
                 {
                     _saveTimer.Stop();
-                    SaveTrades();
-                    ResultsViewModel.UpdateResults();
+
+                    if (_editingTrade == false)
+                    {
+                        SaveTrades();
+                        ResultsViewModel.UpdateResults();
+                        SummaryViewModel.Update(Trades.ToList());
+
+                        if (TradeShowingOnChart != null)
+                        {
+                            ShowTrade(TradeShowingOnChart);
+                        }
+                    }
                 },
                 Dispatcher.CurrentDispatcher);
             _saveTimer.Stop();
@@ -240,6 +251,23 @@ namespace TraderTools.TradeLog.ViewModels
             });
 
             progressViewActions.show("Updating account...");
+        }
+
+        protected override void EditTrade()
+        {
+            _editingTrade = true;
+
+            try
+            {
+                base.EditTrade();
+            }
+            finally
+            {
+                _editingTrade = false;
+                SaveTrades();
+                ResultsViewModel.UpdateResults();
+                SummaryViewModel.Update(Trades.ToList());
+            }
         }
 
         private void TradesOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

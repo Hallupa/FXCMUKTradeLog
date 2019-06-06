@@ -58,11 +58,11 @@ namespace TraderTools.TradeLog
                 var view = new LoginView { Owner = this };
                 var loginVm = new LoginViewModel(() => view.Close(), loginAction);
                 view.DataContext = loginVm;
-                view.Topmost = true;
                 view.ShowDialog();
             };
 
             _vm = new MainWindowsViewModel(createLoginViewFunc, createProgressingViewFunc);
+            _vm.SetParentWindow(this);
 
             DataContext = _vm;
             Closing += OnClosing;

@@ -51,13 +51,13 @@
 
                 <RibbonGroup Header="Chart" Visibility="{Binding Page, Converter={StaticResource ObjToVis}, ConverterParameter={x:Static viewModels:PageToShow.Trades}, Mode=OneWay}">
                     <RibbonButton Label="View trade" Command="{Binding ViewTradeCommand}"/>
-                    <!--<RibbonButton Label="View trade setup" Command="{Binding ViewTradeSetupCommand}"/>-->
                     <RibbonToggleButton Label="Zoom" IsChecked="{Binding ChartingService.ChartMode, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static ui:ChartMode.Zoom}, Mode=TwoWay}"/>
                 </RibbonGroup>
 
                 <RibbonGroup Header="Trades" Visibility="{Binding Page, Converter={StaticResource ObjToVis}, ConverterParameter={x:Static viewModels:PageToShow.Trades}, Mode=OneWay}">
                     <RibbonToggleButton Label="Show only open trades" IsChecked="{Binding ShowOpenTradesOnly}"/>
                     <RibbonToggleButton Label="Show only orders" IsChecked="{Binding ShowOrdersOnly}"/>
+                    <RibbonButton Label="Edit trade's stops/limits" Command="{Binding EditCommand}"/>
                 </RibbonGroup>
 
             </RibbonTab>
