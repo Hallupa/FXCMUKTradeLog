@@ -51,6 +51,7 @@
 
                 <RibbonGroup Header="Chart" Visibility="{Binding Page, Converter={StaticResource ObjToVis}, ConverterParameter={x:Static viewModels:PageToShow.Trades}, Mode=OneWay}">
                     <RibbonButton Label="View trade" Command="{Binding ViewTradeCommand}"/>
+                    <RibbonButton Label="View trade setup" Command="{Binding ViewTradeSetupCommand}"/>
                     <RibbonToggleButton Label="Zoom" IsChecked="{Binding ChartingService.ChartMode, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static ui:ChartMode.Zoom}, Mode=TwoWay}"/>
                 </RibbonGroup>
 

@@ -138,7 +138,28 @@ namespace TraderTools.TradeLog.ViewModels
             });
             ViewTradeSetupCommand = new DelegateCommand(o =>
             {
-                ViewTradeSetup(SelectedTrade);
+                if (_fxcm.Status != ConnectStatus.Connected)
+                {
+                    MessageBox.Show("Login to get price data", "Login to FXCM", MessageBoxButton.OK);
+                    return;
+                }
+
+                var progressViewActions = _createProgressingViewFunc();
+
+                ViewTradeCommand.RaiseCanExecuteChanged();
+
+                Task.Run(() =>
+                {
+                    ViewTradeSetup(SelectedTrade);
+
+                    _dispatcher.Invoke(() =>
+                    {
+                        ViewTradeCommand.RaiseCanExecuteChanged();
+                        progressViewActions.close();
+                    });
+                });
+
+                progressViewActions.show("Loading chart data...");
             });
 
             ResultsViewModel = new TradesResultsViewModel(() =>
