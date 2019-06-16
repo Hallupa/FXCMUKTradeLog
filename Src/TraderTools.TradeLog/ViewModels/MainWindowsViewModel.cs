@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -8,12 +9,15 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using Abt.Controls.SciChart.Numerics.CoordinateCalculators;
+using Abt.Controls.SciChart.Visuals.Annotations;
 using Hallupa.Library;
 using log4net;
 using TraderTools.Basics;
 using TraderTools.Brokers.FXCM;
 using TraderTools.Core.Broker;
 using TraderTools.Core.Services;
+using TraderTools.Core.UI.Services;
 using TraderTools.Core.UI.ViewModels;
 using TraderTools.Core.UI.Views;
 
@@ -34,9 +38,9 @@ namespace TraderTools.TradeLog.ViewModels
         private readonly Func<(Action<string> show, Action close)> _createProgressingViewFunc;
         private FxcmBroker _fxcm;
 
-        [Import]
-        private BrokersService _brokersService;
-
+        [Import] private BrokersService _brokersService;
+        [Import] private IBrokersCandlesService _candlesService;
+        [Import] private ChartingService _chartingService;
         private string _loginOutButtonText;
         private bool _loginOutButtonEnabled = true;
         private Dispatcher _dispatcher;
@@ -48,6 +52,7 @@ namespace TraderTools.TradeLog.ViewModels
         private DispatcherTimer _saveTimer;
         private PageToShow _page = PageToShow.Summary;
         private bool _editingTrade;
+        private bool _refreshUIOnSave;
 
         #endregion
 
@@ -65,12 +70,18 @@ namespace TraderTools.TradeLog.ViewModels
                     if (_editingTrade == false)
                     {
                         SaveTrades();
-                        ResultsViewModel.UpdateResults();
-                        SummaryViewModel.Update(Trades.ToList());
 
-                        if (TradeShowingOnChart != null)
+                        if (_refreshUIOnSave)
                         {
-                            ShowTrade(TradeShowingOnChart);
+                            ResultsViewModel.UpdateResults();
+                            SummaryViewModel.Update(Trades.ToList());
+
+                            if (TradeShowingOnChart != null)
+                            {
+                                ShowTrade(TradeShowingOnChart);
+                            }
+
+                            _refreshUIOnSave = false;
                         }
                     }
                 },
@@ -97,7 +108,7 @@ namespace TraderTools.TradeLog.ViewModels
 
             Broker = _fxcm;
             _brokersService.AddBrokers(brokers);
-            _brokersService.LoadBrokerAccounts();
+            _brokersService.LoadBrokerAccounts(_candlesService);
 
             _account = BrokersService.AccountsLookup[Broker];
             _accountUpdatedObserver = _account.AccountUpdatedObservable.Subscribe(d =>
@@ -181,6 +192,8 @@ namespace TraderTools.TradeLog.ViewModels
             Trades.CollectionChanged += TradesOnCollectionChanged;
 
             RefreshUI();
+
+            _chartingService.ChartLineChangedObservable.Subscribe(ChartLinesChanged);
         }
 
         #region Properties
@@ -193,6 +206,38 @@ namespace TraderTools.TradeLog.ViewModels
                 _page = value;
                 OnPropertyChanged();
             }
+        }
+        
+        private void ChartLinesChanged(object obj)
+        {
+            if (TradeShowingOnChart != null && ChartViewModel != null && ChartViewModel.ChartPaneViewModels.Count > 0 && ChartViewModel.ChartPaneViewModels[0].TradeAnnotations != null)
+            {
+                TradeShowingOnChart.ChartLines = new List<ChartLine>();
+
+                var annotations = ChartViewModel.ChartPaneViewModels[0].TradeAnnotations.OfType<LineAnnotation>().Where(l => (l.Tag != null && ((string)l.Tag).StartsWith("Added"))).ToList();
+                foreach (var a in annotations)
+                {
+                    var categoryCoordCalc = (ICategoryCoordinateCalculator)a.ParentSurface.XAxis.GetCurrentCoordinateCalculator();
+
+                    var line = new ChartLine
+                    {
+                        DateTimeUTC1 = a.X1 is DateTime time ? time.ToUniversalTime() : categoryCoordCalc.TransformIndexToData((int)a.X1).ToUniversalTime(),
+                        DateTimeUTC2 = a.X2 is DateTime time2 ? time2.ToUniversalTime() : categoryCoordCalc.TransformIndexToData((int)a.X2).ToUniversalTime(),
+                        Price1 = a.Y1 is decimal y1 ? y1 : (decimal)((double)a.Y1),
+                        Price2 = a.Y2 is decimal y2 ? y2 : (decimal)((double)a.Y2)
+                    };
+
+                    TradeShowingOnChart.ChartLines.Add(line);
+                }
+
+                SaveData(false);
+            }
+        }
+
+        private void SaveData(bool refreshUI)
+        {
+            _refreshUIOnSave = _refreshUIOnSave || refreshUI;
+            _saveTimer.Start();
         }
 
         public TradesResultsViewModel ResultsViewModel { get; }
@@ -313,7 +358,7 @@ namespace TraderTools.TradeLog.ViewModels
 
         private void TradeDetailsOnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            _saveTimer.Start();
+            SaveData(true);
         }
 
         private void RefreshUI()
@@ -353,6 +398,13 @@ namespace TraderTools.TradeLog.ViewModels
                         {
                             _fxcm.SetUsernamePassword(username, password);
                             _fxcm.Connect();
+
+                            foreach (var marketDetails in _fxcm.GetMarketDetailsList())
+                            {
+                                _candlesService.AddMarketDetails(marketDetails);
+                            }
+
+                            _candlesService.SaveMarketDetailsList();
                         }
                         catch (Exception ex)
                         {
