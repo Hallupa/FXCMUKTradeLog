@@ -60,16 +60,16 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <Label Grid.Column="0" FontSize="16" Content="Current profit from open trades" Margin="20,20,5,20"/>
+            <Label Grid.Column="0" FontSize="16" Content="Proft (Open trades only)" Margin="20,20,5,20"/>
             <TextBox Grid.Column="1" IsReadOnly="True" Text="{Binding ProfitFromOpenTrades, StringFormat={}£{0:0.00}}" FontSize="16" HorizontalAlignment="Center"
                      Margin="0,20,0,20" Padding="5"/>
 
-            <Label Grid.Column="2" FontSize="16" Content="Overall profit" Margin="20,20,5,20"/>
+            <Label Grid.Column="2" FontSize="16" Content="Profit (All trades)" Margin="20,20,5,20"/>
             <TextBox Grid.Column="3" IsReadOnly="True" Text="{Binding OverallProfit, StringFormat={}£{0:0.00}}" FontSize="16" HorizontalAlignment="Center"
                      Margin="0,20,0,20" Padding="5"/>
         </Grid>
 
-        <Label Grid.Row="0" Grid.Column="1" FontSize="20" Content="Total profit from completed trades"/>
+        <Label Grid.Row="0" Grid.Column="1" FontSize="20" Content="Profit (Completed trades only)"/>
         <s:SciChartSurface Grid.Row="1" Grid.Column="1" s:ThemeManager.Theme="Chrome">
             <s:SciChartSurface.RenderableSeries>
                 <s:FastLineRenderableSeries DataSeries="{Binding TotalProfitPerCompletedTradesData}" 
