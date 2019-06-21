@@ -24,7 +24,13 @@ namespace TraderTools.TradeLog.ViewModels
 
         public XyDataSeries<DateTime, double> ProfitPerCompletedTradeData { get; } = new XyDataSeries<DateTime, double>();
 
+        public XyDataSeries<DateTime, double> ProfitPerCompletedTradeDataTrendLine { get; } = new XyDataSeries<DateTime, double>();
+
         public XyDataSeries<DateTime, double> TotalProfitPerCompletedTradesData { get; } = new XyDataSeries<DateTime, double>();
+
+        public XyDataSeries<DateTime, double> RMultiplePerCompletedTradeData { get; } = new XyDataSeries<DateTime, double>();
+
+        public XyDataSeries<DateTime, double> RMultiplePerCompletedTradeDataTrendLine { get; } = new XyDataSeries<DateTime, double>();
 
         public decimal ProfitFromOpenTrades
         {
@@ -49,16 +55,69 @@ namespace TraderTools.TradeLog.ViewModels
         public void Update(List<TradeDetails> trades)
         {
             ProfitPerCompletedTradeData.Clear();
+            RMultiplePerCompletedTradeData.Clear();
+
             var orderedTrades = trades.Where(c => c.CloseDateTimeLocal != null).OrderBy(c => c.CloseDateTimeLocal).ToList();
 
             foreach (var t in orderedTrades)
             {
+                if (t.CloseDateTimeLocal == null) continue;
+
                 if (t.Profit != null)
                 {
                     ProfitPerCompletedTradeData.Append(t.CloseDateTimeLocal.Value, (double) t.Profit.Value);
                 }
+
+                if (t.RMultiple != null)
+                {
+                    RMultiplePerCompletedTradeData.Append(t.CloseDateTimeLocal.Value, (double)t.RMultiple.Value);
+                }
             }
 
+            // Calculate monthly averages for profits
+            ProfitPerCompletedTradeDataTrendLine.Clear();
+            if (orderedTrades.Count > 2)
+            {
+                var earliest = orderedTrades[0].CloseDateTimeLocal.Value;
+                var latest = orderedTrades.Last().CloseDateTimeLocal.Value;
+                var date = new DateTime(earliest.Year, earliest.Month, 1);
+
+                while (date < latest)
+                {
+                    var monthTrades = orderedTrades.Where(t => t.Profit != null
+                                                               && t.CloseDateTimeLocal >= date
+                                                               && t.CloseDateTimeLocal < date.AddMonths(1)).ToList();
+                    if (monthTrades.Count > 0)
+                    {
+                        ProfitPerCompletedTradeDataTrendLine.Append(date.AddDays(14), monthTrades.Average(x => (double)x.Profit.Value));
+                    }
+
+                    date = date.AddMonths(1);
+                }
+            }
+
+            // Calculate monthly averages for R-Multiples
+            RMultiplePerCompletedTradeDataTrendLine.Clear();
+            if (orderedTrades.Count > 2)
+            {
+                var earliest = orderedTrades[0].CloseDateTimeLocal.Value;
+                var latest = orderedTrades.Last().CloseDateTimeLocal.Value;
+                var date = new DateTime(earliest.Year, earliest.Month, 1);
+
+                while (date < latest)
+                {
+                    var monthTrades = orderedTrades.Where(t => t.RMultiple != null
+                                                               && t.CloseDateTimeLocal >= date
+                                                               && t.CloseDateTimeLocal < date.AddMonths(1)).ToList();
+                    if (monthTrades.Count > 0)
+                    {
+                        RMultiplePerCompletedTradeDataTrendLine.Append(date.AddDays(14), monthTrades.Average(x => (double)x.RMultiple.Value));
+                    }
+
+                    date = date.AddMonths(1);
+                }
+            }
+            
             TotalProfitPerCompletedTradesData.Clear();
             var totalProfit = 0.0M;
             foreach (var t in orderedTrades)
