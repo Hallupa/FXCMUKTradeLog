@@ -41,6 +41,8 @@ namespace TraderTools.TradeLog.ViewModels
         [Import] private BrokersService _brokersService;
         [Import] private IBrokersCandlesService _candlesService;
         [Import] private ChartingService _chartingService;
+        [Import] private IMarketDetailsService _marketsService;
+        [Import] private ITradeDetailsAutoCalculatorService _tradeAutoCalculatorService;
         private string _loginOutButtonText;
         private bool _loginOutButtonEnabled = true;
         private Dispatcher _dispatcher;
@@ -108,7 +110,7 @@ namespace TraderTools.TradeLog.ViewModels
 
             Broker = _fxcm;
             _brokersService.AddBrokers(brokers);
-            _brokersService.LoadBrokerAccounts(_candlesService);
+            _brokersService.LoadBrokerAccounts(_candlesService, _tradeAutoCalculatorService);
 
             _account = BrokersService.AccountsLookup[Broker];
             _accountUpdatedObserver = _account.AccountUpdatedObservable.Subscribe(d =>
@@ -301,7 +303,7 @@ namespace TraderTools.TradeLog.ViewModels
             Task.Run(() =>
             {
                 Log.Info("Updating trades");
-                _account.UpdateBrokerAccount(Broker, BrokerCandleService, BrokerAccount.UpdateOption.ForceUpdate);
+                _account.UpdateBrokerAccount(Broker, BrokerCandleService, _marketsService, _tradeAutoCalculatorService, BrokerAccount.UpdateOption.ForceUpdate);
 
                 _dispatcher.Invoke(() =>
                 {
@@ -401,10 +403,10 @@ namespace TraderTools.TradeLog.ViewModels
 
                             foreach (var marketDetails in _fxcm.GetMarketDetailsList())
                             {
-                                _candlesService.AddMarketDetails(marketDetails);
+                                _marketsService.AddMarketDetails(marketDetails);
                             }
 
-                            _candlesService.SaveMarketDetailsList();
+                            _marketsService.SaveMarketDetailsList();
                         }
                         catch (Exception ex)
                         {

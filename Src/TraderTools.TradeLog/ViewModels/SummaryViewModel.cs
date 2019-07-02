@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Abt.Controls.SciChart;
 using Abt.Controls.SciChart.Model.DataSeries;
-using Abt.Controls.SciChart.Visuals.RenderableSeries;
 using TraderTools.Basics;
 using TraderTools.Core.UI;
 
@@ -89,7 +87,13 @@ namespace TraderTools.TradeLog.ViewModels
                                                                && t.CloseDateTimeLocal < date.AddMonths(1)).ToList();
                     if (monthTrades.Count > 0)
                     {
-                        ProfitPerCompletedTradeDataTrendLine.Append(date.AddDays(14), monthTrades.Average(x => (double)x.Profit.Value));
+                        var pointDate = date.AddDays(14);
+                        if (pointDate > latest)
+                        {
+                            pointDate = latest;
+                        }
+
+                        ProfitPerCompletedTradeDataTrendLine.Append(pointDate, monthTrades.Where(x => x.Profit != null).Average(x => (double)x.Profit.Value));
                     }
 
                     date = date.AddMonths(1);
@@ -111,7 +115,13 @@ namespace TraderTools.TradeLog.ViewModels
                                                                && t.CloseDateTimeLocal < date.AddMonths(1)).ToList();
                     if (monthTrades.Count > 0)
                     {
-                        RMultiplePerCompletedTradeDataTrendLine.Append(date.AddDays(14), monthTrades.Average(x => (double)x.RMultiple.Value));
+                        var pointDate = date.AddDays(14);
+                        if (pointDate > latest)
+                        {
+                            pointDate = latest;
+                        }
+
+                        RMultiplePerCompletedTradeDataTrendLine.Append(pointDate, monthTrades.Where(x => x.RMultiple != null).Average(x => (double)x.RMultiple.Value));
                     }
 
                     date = date.AddMonths(1);

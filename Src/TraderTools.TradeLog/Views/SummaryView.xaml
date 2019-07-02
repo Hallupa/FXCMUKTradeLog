@@ -10,112 +10,149 @@
       d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="*" MinHeight="20"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="*" MinHeight="20"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*" MinWidth="20"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*" MinWidth="20"/>
         </Grid.ColumnDefinitions>
 
-        <Label Grid.Row="0" Grid.Column="0" FontSize="18" Content="Profit from each completed trade"/>
-        <s:SciChartSurface Grid.Row="1" Grid.Column="0" s:ThemeManager.Theme="Chrome" Margin="0" Padding="2">
-            <s:SciChartSurface.RenderableSeries>
-                <s:XyScatterRenderableSeries DataSeries="{Binding ProfitPerCompletedTradeData}" SeriesColor="DarkGreen" StrokeThickness="2">
-                    <s:XyScatterRenderableSeries.PointMarker>
-                        <s:EllipsePointMarker Width="5" Height="5" Fill="SteelBlue" Stroke="SteelBlue" StrokeThickness="1">
-                        </s:EllipsePointMarker>
-                    </s:XyScatterRenderableSeries.PointMarker>
-                </s:XyScatterRenderableSeries>
+        <Grid Grid.Row="0" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Label Grid.Row="0" FontSize="18" Content="Profit from each completed trade"/>
+            <Border Grid.Row="1" BorderBrush="DarkGray" BorderThickness="1" Margin="5" Padding="5">
+                <s:SciChartSurface  s:ThemeManager.Theme="Chrome" Margin="0" Padding="2">
+                    <s:SciChartSurface.RenderableSeries>
+                        <s:XyScatterRenderableSeries DataSeries="{Binding ProfitPerCompletedTradeData}" SeriesColor="DarkGreen" StrokeThickness="2">
+                            <s:XyScatterRenderableSeries.PointMarker>
+                                <s:EllipsePointMarker Width="5" Height="5" Fill="SteelBlue" Stroke="SteelBlue" StrokeThickness="1">
+                                </s:EllipsePointMarker>
+                            </s:XyScatterRenderableSeries.PointMarker>
+                        </s:XyScatterRenderableSeries>
 
-                <s:FastLineRenderableSeries DataSeries="{Binding ProfitPerCompletedTradeDataTrendLine}" SeriesColor="DarkRed" StrokeThickness="4" Opacity="0.5"/>
-            </s:SciChartSurface.RenderableSeries>
+                        <s:FastLineRenderableSeries DataSeries="{Binding ProfitPerCompletedTradeDataTrendLine}" SeriesColor="DarkRed" StrokeThickness="4" Opacity="0.5">
+                            <s:FastLineRenderableSeries.PointMarker>
+                                <s:EllipsePointMarker Width="8" Height="8" Fill="DarkRed" Stroke="DarkRed" StrokeThickness="1"/>
+                            </s:FastLineRenderableSeries.PointMarker>
+                        </s:FastLineRenderableSeries>
+                    </s:SciChartSurface.RenderableSeries>
 
-            <s:SciChartSurface.XAxis>
-                <s:DateTimeAxis GrowBy="0.05, 0.05"/>
-            </s:SciChartSurface.XAxis>
+                    <s:SciChartSurface.XAxis>
+                        <s:DateTimeAxis GrowBy="0.05, 0.05"/>
+                    </s:SciChartSurface.XAxis>
 
-            <s:SciChartSurface.YAxis>
-                <s:NumericAxis GrowBy="0.05, 0.05" DrawMajorBands="True"/>
-            </s:SciChartSurface.YAxis>
+                    <s:SciChartSurface.YAxis>
+                        <s:NumericAxis GrowBy="0.05, 0.05" DrawMajorBands="True"/>
+                    </s:SciChartSurface.YAxis>
 
-            <s:SciChartSurface.ChartModifier>
-                <s:ModifierGroup>
-                    <s:ZoomPanModifier ExecuteOn="MouseLeftButton" ClipModeX="None" />
-                    <s:YAxisDragModifier DragMode="Scale"/>
-                    <s:XAxisDragModifier DragMode="Scale"/>
-                    <s:MouseWheelZoomModifier/>
-                    <s:ZoomExtentsModifier ExecuteOn="MouseDoubleClick" />
-                    <s:TooltipModifier></s:TooltipModifier>
-                    <s:CursorModifier></s:CursorModifier>
-                </s:ModifierGroup>
-            </s:SciChartSurface.ChartModifier>
-        </s:SciChartSurface>
+                    <s:SciChartSurface.ChartModifier>
+                        <s:ModifierGroup>
+                            <s:ZoomPanModifier ExecuteOn="MouseLeftButton" ClipModeX="None" />
+                            <s:YAxisDragModifier DragMode="Scale"/>
+                            <s:XAxisDragModifier DragMode="Scale"/>
+                            <s:MouseWheelZoomModifier/>
+                            <s:ZoomExtentsModifier ExecuteOn="MouseDoubleClick" />
+                            <s:TooltipModifier></s:TooltipModifier>
+                            <s:CursorModifier></s:CursorModifier>
+                        </s:ModifierGroup>
+                    </s:SciChartSurface.ChartModifier>
+                </s:SciChartSurface>
+            </Border>
+        </Grid>
 
-        <Label Grid.Row="0" Grid.Column="1" FontSize="18" Content="Profit (Completed trades only)"/>
-        <s:SciChartSurface Grid.Row="1" Grid.Column="1" s:ThemeManager.Theme="Chrome" Padding="2">
-            <s:SciChartSurface.RenderableSeries>
-                <s:FastLineRenderableSeries DataSeries="{Binding TotalProfitPerCompletedTradesData}" SeriesColor="DarkGreen" StrokeThickness="4"/>
-            </s:SciChartSurface.RenderableSeries>
+        <GridSplitter Grid.Row="1" Grid.Column="0" Height="7" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+        
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Center" Grid.RowSpan="4" VerticalAlignment="Stretch" Width="7" />
 
-            <s:SciChartSurface.XAxis>
-                <s:DateTimeAxis GrowBy="0.05, 0.05"/>
-            </s:SciChartSurface.XAxis>
+        <Grid Grid.Row="0" Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Label FontSize="18" Content="Profit (Completed trades only)"/>
+            <Border Grid.Row="1" BorderBrush="DarkGray" BorderThickness="1" Margin="5" Padding="5">
+                <s:SciChartSurface s:ThemeManager.Theme="Chrome" Padding="2">
+                    <s:SciChartSurface.RenderableSeries>
+                        <s:FastLineRenderableSeries DataSeries="{Binding TotalProfitPerCompletedTradesData}" SeriesColor="DarkGreen" StrokeThickness="4"/>
+                    </s:SciChartSurface.RenderableSeries>
 
-            <s:SciChartSurface.YAxis>
-                <s:NumericAxis GrowBy="0.05, 0.05" DrawMajorBands="True"/>
-            </s:SciChartSurface.YAxis>
+                    <s:SciChartSurface.XAxis>
+                        <s:DateTimeAxis GrowBy="0.05, 0.05"/>
+                    </s:SciChartSurface.XAxis>
 
-            <s:SciChartSurface.ChartModifier>
-                <s:ModifierGroup>
-                    <s:ZoomPanModifier ExecuteOn="MouseLeftButton" ClipModeX="None" />
-                    <s:YAxisDragModifier DragMode="Scale"/>
-                    <s:XAxisDragModifier DragMode="Scale"/>
-                    <s:MouseWheelZoomModifier/>
-                    <s:ZoomExtentsModifier ExecuteOn="MouseDoubleClick" />
-                    <s:TooltipModifier></s:TooltipModifier>
-                    <s:CursorModifier></s:CursorModifier>
-                </s:ModifierGroup>
-            </s:SciChartSurface.ChartModifier>
-        </s:SciChartSurface>
+                    <s:SciChartSurface.YAxis>
+                        <s:NumericAxis GrowBy="0.05, 0.05" DrawMajorBands="True"/>
+                    </s:SciChartSurface.YAxis>
 
+                    <s:SciChartSurface.ChartModifier>
+                        <s:ModifierGroup>
+                            <s:ZoomPanModifier ExecuteOn="MouseLeftButton" ClipModeX="None" />
+                            <s:YAxisDragModifier DragMode="Scale"/>
+                            <s:XAxisDragModifier DragMode="Scale"/>
+                            <s:MouseWheelZoomModifier/>
+                            <s:ZoomExtentsModifier ExecuteOn="MouseDoubleClick" />
+                            <s:TooltipModifier></s:TooltipModifier>
+                            <s:CursorModifier></s:CursorModifier>
+                        </s:ModifierGroup>
+                    </s:SciChartSurface.ChartModifier>
+                </s:SciChartSurface>
+            </Border>
+        </Grid>
 
-        <Label Grid.Row="2" Grid.Column="0" FontSize="18" Content="R-multiple from each completed trade"/>
-        <s:SciChartSurface Grid.Row="3" Grid.Column="0" s:ThemeManager.Theme="Chrome" Padding="2">
-            <s:SciChartSurface.RenderableSeries>
-                <s:XyScatterRenderableSeries DataSeries="{Binding RMultiplePerCompletedTradeData}" SeriesColor="DarkGreen" StrokeThickness="2">
-                    <s:XyScatterRenderableSeries.PointMarker>
-                        <s:EllipsePointMarker Width="5" Height="5" Fill="SteelBlue" Stroke="SteelBlue" StrokeThickness="1"/>
-                    </s:XyScatterRenderableSeries.PointMarker>
-                </s:XyScatterRenderableSeries>
+        <GridSplitter Grid.Row="1" Grid.Column="2" Height="7" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+        
+        <Grid Grid.Row="2" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Label FontSize="18" Content="R-multiple from each completed trade"/>
+            <Border Grid.Row="1" BorderBrush="DarkGray" BorderThickness="1" Margin="5" Padding="5">
+                <s:SciChartSurface  s:ThemeManager.Theme="Chrome" Padding="2">
+                    <s:SciChartSurface.RenderableSeries>
+                        <s:XyScatterRenderableSeries DataSeries="{Binding RMultiplePerCompletedTradeData}" SeriesColor="DarkGreen" StrokeThickness="2">
+                            <s:XyScatterRenderableSeries.PointMarker>
+                                <s:EllipsePointMarker Width="5" Height="5" Fill="SteelBlue" Stroke="SteelBlue" StrokeThickness="1"/>
+                            </s:XyScatterRenderableSeries.PointMarker>
+                        </s:XyScatterRenderableSeries>
 
-                <s:FastLineRenderableSeries DataSeries="{Binding RMultiplePerCompletedTradeDataTrendLine}" SeriesColor="DarkRed" StrokeThickness="4" Opacity="0.5"/>
-            </s:SciChartSurface.RenderableSeries>
+                        <s:FastLineRenderableSeries DataSeries="{Binding RMultiplePerCompletedTradeDataTrendLine}" SeriesColor="DarkRed" StrokeThickness="4" Opacity="0.5">
+                            <s:FastLineRenderableSeries.PointMarker>
+                                <s:EllipsePointMarker Width="8" Height="8" Fill="DarkRed" Stroke="DarkRed" StrokeThickness="1"/>
+                            </s:FastLineRenderableSeries.PointMarker>
+                        </s:FastLineRenderableSeries>
+                    </s:SciChartSurface.RenderableSeries>
 
-            <s:SciChartSurface.XAxis>
-                <s:DateTimeAxis GrowBy="0.05, 0.05"/>
-            </s:SciChartSurface.XAxis>
+                    <s:SciChartSurface.XAxis>
+                        <s:DateTimeAxis GrowBy="0.05, 0.05"/>
+                    </s:SciChartSurface.XAxis>
 
-            <s:SciChartSurface.YAxis>
-                <s:NumericAxis GrowBy="0.05, 0.05" DrawMajorBands="True"/>
-            </s:SciChartSurface.YAxis>
+                    <s:SciChartSurface.YAxis>
+                        <s:NumericAxis GrowBy="0.05, 0.05" DrawMajorBands="True"/>
+                    </s:SciChartSurface.YAxis>
 
-            <s:SciChartSurface.ChartModifier>
-                <s:ModifierGroup>
-                    <s:ZoomPanModifier ExecuteOn="MouseLeftButton" ClipModeX="None" />
-                    <s:YAxisDragModifier DragMode="Scale"/>
-                    <s:XAxisDragModifier DragMode="Scale"/>
-                    <s:MouseWheelZoomModifier/>
-                    <s:ZoomExtentsModifier ExecuteOn="MouseDoubleClick" />
-                    <s:TooltipModifier></s:TooltipModifier>
-                    <s:CursorModifier></s:CursorModifier>
-                </s:ModifierGroup>
-            </s:SciChartSurface.ChartModifier>
-        </s:SciChartSurface>
+                    <s:SciChartSurface.ChartModifier>
+                        <s:ModifierGroup>
+                            <s:ZoomPanModifier ExecuteOn="MouseLeftButton" ClipModeX="None" />
+                            <s:YAxisDragModifier DragMode="Scale"/>
+                            <s:XAxisDragModifier DragMode="Scale"/>
+                            <s:MouseWheelZoomModifier/>
+                            <s:ZoomExtentsModifier ExecuteOn="MouseDoubleClick" />
+                            <s:TooltipModifier></s:TooltipModifier>
+                            <s:CursorModifier></s:CursorModifier>
+                        </s:ModifierGroup>
+                    </s:SciChartSurface.ChartModifier>
+                </s:SciChartSurface>
+            </Border>
+        </Grid>
 
-        <Grid Grid.Row="2" Grid.Column="1" Grid.RowSpan="2">
+        <Grid Grid.Row="2" Grid.Column="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
