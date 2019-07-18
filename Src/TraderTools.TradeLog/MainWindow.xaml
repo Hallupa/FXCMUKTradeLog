@@ -58,8 +58,9 @@
                 </RibbonGroup>
 
                 <RibbonGroup Header="Trades" Visibility="{Binding Page, Converter={StaticResource ObjToVis}, ConverterParameter={x:Static viewModels:PageToShow.Trades}, Mode=OneWay}">
-                    <RibbonToggleButton Label="Show only open trades" IsChecked="{Binding ShowOpenTradesOnly}"/>
-                    <RibbonToggleButton Label="Show only orders" IsChecked="{Binding ShowOrdersOnly}"/>
+                    <RibbonToggleButton Label="Show open trades" IsChecked="{Binding ShowOpenTrades}"/>
+                    <RibbonToggleButton Label="Show orders" IsChecked="{Binding ShowOrders}"/>
+                    <RibbonToggleButton Label="Show closed trades" IsChecked="{Binding ShowClosedTrades}"/>
                     <RibbonButton Label="Edit trade's stops/limits" Command="{Binding EditCommand}"/>
                 </RibbonGroup>
 

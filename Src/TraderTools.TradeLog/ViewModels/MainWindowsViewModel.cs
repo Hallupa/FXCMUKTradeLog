@@ -96,7 +96,9 @@ namespace TraderTools.TradeLog.ViewModels
                                       | TradeListDisplayOptionsFlag.OrderPrice
                                       | TradeListDisplayOptionsFlag.Comments
                                       | TradeListDisplayOptionsFlag.ResultR
-                                      | TradeListDisplayOptionsFlag.ClosePrice;
+                                      | TradeListDisplayOptionsFlag.ClosePrice
+                                      | TradeListDisplayOptionsFlag.Strategies
+                                      | TradeListDisplayOptionsFlag.Status;
 
             _loginOutButtonText = "Login";
             _dispatcher = Dispatcher.CurrentDispatcher;
