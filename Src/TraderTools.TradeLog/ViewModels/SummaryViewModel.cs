@@ -50,7 +50,7 @@ namespace TraderTools.TradeLog.ViewModels
             }
         }
 
-        public void Update(List<TradeDetails> trades)
+        public void Update(List<Trade> trades)
         {
             ProfitPerCompletedTradeData.Clear();
             RMultiplePerCompletedTradeData.Clear();

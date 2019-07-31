@@ -345,22 +345,22 @@ namespace TraderTools.TradeLog.ViewModels
         {
             if (e.Action == NotifyCollectionChangedAction.Remove)
             {
-                foreach (var t in e.OldItems.Cast<TradeDetails>())
+                foreach (var t in e.OldItems.Cast<Trade>())
                 {
-                    t.PropertyChanged -= TradeDetailsOnPropertyChanged;
+                    t.PropertyChanged -= TradeOnPropertyChanged;
                 }
             }
 
             if (e.Action == NotifyCollectionChangedAction.Add)
             {
-                foreach (var t in e.NewItems.Cast<TradeDetails>())
+                foreach (var t in e.NewItems.Cast<Trade>())
                 {
-                    t.PropertyChanged += TradeDetailsOnPropertyChanged;
+                    t.PropertyChanged += TradeOnPropertyChanged;
                 }
             }
         }
 
-        private void TradeDetailsOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void TradeOnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             SaveData(true);
         }

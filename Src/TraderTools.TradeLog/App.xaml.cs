@@ -23,6 +23,12 @@ namespace TraderTools.TradeLog
 
             var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"FXCMTradeLog");
             BrokersService.DataDirectory = path;
+
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
             BrokersCandlesService.EarliestDateTime = new DateTime(2016, 1, 1);
 
             DependencyContainer.AddAssembly(typeof(App).Assembly);
