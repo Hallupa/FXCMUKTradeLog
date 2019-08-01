@@ -13,6 +13,7 @@
             <RowDefinition Height="*" MinHeight="20"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*" MinHeight="20"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="20"/>
@@ -35,12 +36,6 @@
                                 </s:EllipsePointMarker>
                             </s:XyScatterRenderableSeries.PointMarker>
                         </s:XyScatterRenderableSeries>
-
-                        <s:FastLineRenderableSeries DataSeries="{Binding ProfitPerCompletedTradeDataTrendLine}" SeriesColor="DarkRed" StrokeThickness="4" Opacity="0.5">
-                            <s:FastLineRenderableSeries.PointMarker>
-                                <s:EllipsePointMarker Width="8" Height="8" Fill="DarkRed" Stroke="DarkRed" StrokeThickness="1"/>
-                            </s:FastLineRenderableSeries.PointMarker>
-                        </s:FastLineRenderableSeries>
                     </s:SciChartSurface.RenderableSeries>
 
                     <s:SciChartSurface.XAxis>
@@ -48,7 +43,7 @@
                     </s:SciChartSurface.XAxis>
 
                     <s:SciChartSurface.YAxis>
-                        <s:NumericAxis GrowBy="0.05, 0.05" DrawMajorBands="True"/>
+                        <s:NumericAxis GrowBy="0.05, 0.05" DrawMajorBands="True" AxisTitle="Individual trade profit"/>
                     </s:SciChartSurface.YAxis>
 
                     <s:SciChartSurface.ChartModifier>
@@ -68,7 +63,7 @@
 
         <GridSplitter Grid.Row="1" Grid.Column="0" Height="7" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
         
-        <GridSplitter Grid.Column="1" HorizontalAlignment="Center" Grid.RowSpan="4" VerticalAlignment="Stretch" Width="7" />
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Center" Grid.RowSpan="3" VerticalAlignment="Stretch" Width="7" />
 
         <Grid Grid.Row="0" Grid.Column="2">
             <Grid.RowDefinitions>
@@ -153,20 +148,48 @@
         </Grid>
 
         <Grid Grid.Row="2" Grid.Column="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
+            <Label Grid.Row="0" FontSize="18" Content="Monthly profit (Includes open trades)"/>
+            <Border Grid.Row="1" BorderBrush="DarkGray" BorderThickness="1" Margin="5" Padding="5">
+                <s:SciChartSurface  s:ThemeManager.Theme="Chrome" Margin="0" Padding="2">
+                    <s:SciChartSurface.RenderableSeries>
+                        <s:FastColumnRenderableSeries DataSeries="{Binding ProfitPerMonth}" SeriesColor="DarkRed" DataPointWidth="0.9"
+                                                      StrokeThickness="0" Opacity="1.0">
+                        </s:FastColumnRenderableSeries>
+                    </s:SciChartSurface.RenderableSeries>
 
-            <Label Grid.Column="0" FontSize="16" Content="Proft (Open trades only)" Margin="3,20,3,3" />
-            <TextBox Grid.Column="1" IsReadOnly="True" Text="{Binding ProfitFromOpenTrades, StringFormat={}£{0:0.00}}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="3,20,3,3" Padding="4" />
+                    <s:SciChartSurface.XAxis>
+                        <s:DateTimeAxis GrowBy="0.05, 0.05"/>
+                    </s:SciChartSurface.XAxis>
 
-            <Label Grid.Column="0" Grid.Row="1" FontSize="16" Content="Profit (All trades)" Margin="3" />
-            <TextBox Grid.Column="1" Grid.Row="1" IsReadOnly="True" Text="{Binding OverallProfit, StringFormat={}£{0:0.00}}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="3" Padding="4" />
+                    <s:SciChartSurface.YAxis>
+                        <s:NumericAxis GrowBy="0.05, 0.05" DrawMajorBands="True" AxisTitle="Total profit for month"/>
+                    </s:SciChartSurface.YAxis>
+
+                    <s:SciChartSurface.ChartModifier>
+                        <s:ModifierGroup>
+                            <s:ZoomPanModifier ExecuteOn="MouseLeftButton" ClipModeX="None" />
+                            <s:YAxisDragModifier DragMode="Scale"/>
+                            <s:XAxisDragModifier DragMode="Scale"/>
+                            <s:MouseWheelZoomModifier/>
+                            <s:ZoomExtentsModifier ExecuteOn="MouseDoubleClick" />
+                            <s:TooltipModifier></s:TooltipModifier>
+                            <s:CursorModifier></s:CursorModifier>
+                        </s:ModifierGroup>
+                    </s:SciChartSurface.ChartModifier>
+                </s:SciChartSurface>
+            </Border>
         </Grid>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3">
+            <Label FontSize="16" Content="Proft (Open trades only)" Margin="3" />
+            <TextBox IsReadOnly="True" Text="{Binding ProfitFromOpenTrades, StringFormat={}£{0:0.00}}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="3" Padding="4" />
+
+            <Label HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" Content="Profit (All trades)" Margin="20,3,3,3" />
+            <TextBox IsReadOnly="True" Text="{Binding OverallProfit, StringFormat={}£{0:0.00}}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="3" Padding="4" />
+        </StackPanel>
     </Grid>
 </UserControl>

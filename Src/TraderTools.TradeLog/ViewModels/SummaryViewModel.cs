@@ -22,7 +22,7 @@ namespace TraderTools.TradeLog.ViewModels
 
         public XyDataSeries<DateTime, double> ProfitPerCompletedTradeData { get; } = new XyDataSeries<DateTime, double>();
 
-        public XyDataSeries<DateTime, double> ProfitPerCompletedTradeDataTrendLine { get; } = new XyDataSeries<DateTime, double>();
+        public XyDataSeries<DateTime, double> ProfitPerMonth { get; } = new XyDataSeries<DateTime, double>();
 
         public XyDataSeries<DateTime, double> TotalProfitPerCompletedTradesData { get; } = new XyDataSeries<DateTime, double>();
 
@@ -55,7 +55,8 @@ namespace TraderTools.TradeLog.ViewModels
             ProfitPerCompletedTradeData.Clear();
             RMultiplePerCompletedTradeData.Clear();
 
-            var orderedTrades = trades.Where(c => c.CloseDateTimeLocal != null).OrderBy(c => c.CloseDateTimeLocal).ToList();
+            var now = DateTime.Now;
+            var orderedTrades = trades.OrderBy(c => c.CloseDateTimeLocal ?? now).ToList();
 
             foreach (var t in orderedTrades)
             {
@@ -63,37 +64,32 @@ namespace TraderTools.TradeLog.ViewModels
 
                 if (t.Profit != null)
                 {
-                    ProfitPerCompletedTradeData.Append(t.CloseDateTimeLocal.Value, (double) t.Profit.Value);
+                    ProfitPerCompletedTradeData.Append(t.CloseDateTimeLocal ?? now, (double)t.Profit.Value);
                 }
 
                 if (t.RMultiple != null)
                 {
-                    RMultiplePerCompletedTradeData.Append(t.CloseDateTimeLocal.Value, (double)t.RMultiple.Value);
+                    RMultiplePerCompletedTradeData.Append(t.CloseDateTimeLocal ?? now, (double)t.RMultiple.Value);
                 }
             }
 
-            // Calculate monthly averages for profits
-            ProfitPerCompletedTradeDataTrendLine.Clear();
+            // Calculate monthly profits
+            ProfitPerMonth.Clear();
             if (orderedTrades.Count > 2)
             {
-                var earliest = orderedTrades[0].CloseDateTimeLocal.Value;
-                var latest = orderedTrades.Last().CloseDateTimeLocal.Value;
+                var earliest = orderedTrades[0].CloseDateTimeLocal ?? now;
+                var latest = orderedTrades.Last(c => c.CloseDateTimeLocal != null).CloseDateTimeLocal ?? now;
                 var date = new DateTime(earliest.Year, earliest.Month, 1);
 
                 while (date < latest)
                 {
                     var monthTrades = orderedTrades.Where(t => t.Profit != null
-                                                               && t.CloseDateTimeLocal >= date
-                                                               && t.CloseDateTimeLocal < date.AddMonths(1)).ToList();
+                                                               && (t.CloseDateTimeLocal ?? now) >= date
+                                                               && (t.CloseDateTimeLocal ?? now) < date.AddMonths(1)).ToList();
                     if (monthTrades.Count > 0)
                     {
                         var pointDate = date.AddDays(14);
-                        if (pointDate > latest)
-                        {
-                            pointDate = latest;
-                        }
-
-                        ProfitPerCompletedTradeDataTrendLine.Append(pointDate, monthTrades.Where(x => x.Profit != null).Average(x => (double)x.Profit.Value));
+                        ProfitPerMonth.Append(pointDate, monthTrades.Where(x => x.Profit != null).Sum(x => (double)x.Profit.Value));
                     }
 
                     date = date.AddMonths(1);
@@ -104,15 +100,15 @@ namespace TraderTools.TradeLog.ViewModels
             RMultiplePerCompletedTradeDataTrendLine.Clear();
             if (orderedTrades.Count > 2)
             {
-                var earliest = orderedTrades[0].CloseDateTimeLocal.Value;
-                var latest = orderedTrades.Last().CloseDateTimeLocal.Value;
+                var earliest = orderedTrades[0].CloseDateTimeLocal ?? now;
+                var latest = orderedTrades.Last().CloseDateTimeLocal ?? now;
                 var date = new DateTime(earliest.Year, earliest.Month, 1);
 
                 while (date < latest)
                 {
                     var monthTrades = orderedTrades.Where(t => t.RMultiple != null
-                                                               && t.CloseDateTimeLocal >= date
-                                                               && t.CloseDateTimeLocal < date.AddMonths(1)).ToList();
+                                                               && (t.CloseDateTimeLocal ?? now) >= date
+                                                               && (t.CloseDateTimeLocal ?? now) < date.AddMonths(1)).ToList();
                     if (monthTrades.Count > 0)
                     {
                         var pointDate = date.AddDays(14);
@@ -127,7 +123,7 @@ namespace TraderTools.TradeLog.ViewModels
                     date = date.AddMonths(1);
                 }
             }
-            
+
             TotalProfitPerCompletedTradesData.Clear();
             var totalProfit = 0.0M;
             foreach (var t in orderedTrades)
@@ -135,7 +131,7 @@ namespace TraderTools.TradeLog.ViewModels
                 if (t.Profit != null)
                 {
                     totalProfit += t.Profit.Value;
-                    TotalProfitPerCompletedTradesData.Append(t.CloseDateTimeLocal.Value, (double)totalProfit);
+                    TotalProfitPerCompletedTradesData.Append(t.CloseDateTimeLocal ?? now, (double)totalProfit);
                 }
             }
 
