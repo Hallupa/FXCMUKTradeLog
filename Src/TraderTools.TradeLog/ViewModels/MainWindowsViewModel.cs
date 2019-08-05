@@ -43,6 +43,7 @@ namespace TraderTools.TradeLog.ViewModels
         [Import] private ChartingService _chartingService;
         [Import] private IMarketDetailsService _marketsService;
         [Import] private ITradeDetailsAutoCalculatorService _tradeAutoCalculatorService;
+        [Import] private DataDirectoryService _dataDirectoryService;
         private string _loginOutButtonText;
         private bool _loginOutButtonEnabled = true;
         private Dispatcher _dispatcher;
@@ -98,7 +99,8 @@ namespace TraderTools.TradeLog.ViewModels
                                       | TradeListDisplayOptionsFlag.ResultR
                                       | TradeListDisplayOptionsFlag.ClosePrice
                                       | TradeListDisplayOptionsFlag.Strategies
-                                      | TradeListDisplayOptionsFlag.Status;
+                                      | TradeListDisplayOptionsFlag.Status
+                                      | TradeListDisplayOptionsFlag.Risk;
 
             _loginOutButtonText = "Login";
             _dispatcher = Dispatcher.CurrentDispatcher;
@@ -112,7 +114,7 @@ namespace TraderTools.TradeLog.ViewModels
 
             Broker = _fxcm;
             _brokersService.AddBrokers(brokers);
-            _brokersService.LoadBrokerAccounts(_candlesService, _tradeAutoCalculatorService);
+            _brokersService.LoadBrokerAccounts(_tradeAutoCalculatorService, _dataDirectoryService);
 
             _account = BrokersService.AccountsLookup[Broker];
             _accountUpdatedObserver = _account.AccountUpdatedObservable.Subscribe(d =>
@@ -458,7 +460,7 @@ namespace TraderTools.TradeLog.ViewModels
         {
             var fxcmBroker = BrokersService.Brokers.First(x => x.Name == "FXCM");
             var fxcm = BrokersService.AccountsLookup[fxcmBroker];
-            fxcm.SaveAccount(BrokersService.DataDirectory);
+            fxcm.SaveAccount();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

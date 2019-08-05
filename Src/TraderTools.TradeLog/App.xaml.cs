@@ -1,8 +1,7 @@
-﻿using System;
+﻿using System.ComponentModel.Composition;
 using System.IO;
 using System.Reflection;
 using System.Windows;
-using Abt.Controls.SciChart.Visuals;
 using Hallupa.Library;
 using log4net;
 using TraderTools.Core.Services;
@@ -16,24 +15,24 @@ namespace TraderTools.TradeLog
     public partial class App : Application
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        [Import] private DataDirectoryService _dataDirectoryService;
 
         protected override void OnStartup(StartupEventArgs e)
         {
             Log.Info("Starting application");
 
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"FXCMTradeLog");
-            BrokersService.DataDirectory = path;
-
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-
-            BrokersCandlesService.EarliestDateTime = new DateTime(2016, 1, 1);
-
             DependencyContainer.AddAssembly(typeof(App).Assembly);
             DependencyContainer.AddAssembly(typeof(ChartingService).Assembly);
             DependencyContainer.AddAssembly(typeof(BrokersService).Assembly);
+
+            DependencyContainer.ComposeParts(this);
+
+            _dataDirectoryService.SetApplicationName("FXCMTradeLog");
+
+            if (!Directory.Exists(_dataDirectoryService.MainDirectoryWithApplicationName))
+            {
+                Directory.CreateDirectory(_dataDirectoryService.MainDirectoryWithApplicationName);
+            }
         }
     }
 }
