@@ -47,6 +47,7 @@
                     <RibbonToggleButton Label="Summary" IsChecked="{Binding Page, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:PageToShow.Summary}, Mode=TwoWay}"/>
                     <RibbonToggleButton Label="Trades" IsChecked="{Binding Page, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:PageToShow.Trades}, Mode=TwoWay}"/>
                     <RibbonToggleButton Label="Results" IsChecked="{Binding Page, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:PageToShow.Results}, Mode=TwoWay}"/>
+                    <RibbonToggleButton Label="Simulate existing trades" IsChecked="{Binding Page, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:PageToShow.SimulateTrades}, Mode=TwoWay}"/>
                 </RibbonGroup>
 
                 <RibbonGroup Header="Chart" Visibility="{Binding Page, Converter={StaticResource ObjToVis}, ConverterParameter={x:Static viewModels:PageToShow.Trades}, Mode=OneWay}">
@@ -62,6 +63,10 @@
                     <RibbonToggleButton Label="Show orders" IsChecked="{Binding ShowOrders}"/>
                     <RibbonToggleButton Label="Show closed trades" IsChecked="{Binding ShowClosedTrades}"/>
                     <RibbonButton Label="Edit trade's stops/limits" Command="{Binding EditCommand}"/>
+                </RibbonGroup>
+
+                <RibbonGroup Header="Simulate" Visibility="{Binding Page, Converter={StaticResource ObjToVis}, ConverterParameter={x:Static viewModels:PageToShow.SimulateTrades}, Mode=OneWay}">
+                    <RibbonButton Label="Run simulation" Command="{Binding SimulateTradesViewModel.RunSimulationCommand}"/>
                 </RibbonGroup>
 
             </RibbonTab>
@@ -97,6 +102,10 @@
 
         <Grid Grid.Row="1" Visibility="{Binding Page, Converter={StaticResource ObjToVis}, ConverterParameter={x:Static viewModels:PageToShow.Results}, Mode=OneWay}">
             <views:TradesResultsControl DataContext="{Binding ResultsViewModel}"/>
+        </Grid>
+
+        <Grid Grid.Row="1" Visibility="{Binding Page, Converter={StaticResource ObjToVis}, ConverterParameter={x:Static viewModels:PageToShow.SimulateTrades}, Mode=OneWay}">
+            <views1:SimulateExistingTradesView DataContext="{Binding SimulateTradesViewModel}"/>
         </Grid>
 
         <ui1:LogControl Grid.Row="2" x:Name="Logger"/>

@@ -27,7 +27,8 @@ namespace TraderTools.TradeLog.ViewModels
     {
         Summary,
         Trades,
-        Results
+        Results,
+        SimulateTrades
     }
 
     public class MainWindowsViewModel : TradeViewModelBase, INotifyPropertyChanged
@@ -78,6 +79,7 @@ namespace TraderTools.TradeLog.ViewModels
                         {
                             ResultsViewModel.UpdateResults();
                             SummaryViewModel.Update(Trades.ToList());
+                            SimulateTradesViewModel.Update(Trades.ToList());
 
                             if (TradeShowingOnChart != null)
                             {
@@ -194,6 +196,7 @@ namespace TraderTools.TradeLog.ViewModels
             };
 
             SummaryViewModel = new SummaryViewModel();
+            SimulateTradesViewModel = new SimulateExistingTradesViewModel();
 
             Trades.CollectionChanged += TradesOnCollectionChanged;
 
@@ -249,6 +252,8 @@ namespace TraderTools.TradeLog.ViewModels
         public TradesResultsViewModel ResultsViewModel { get; }
 
         public SummaryViewModel SummaryViewModel { get; }
+
+        public SimulateExistingTradesViewModel SimulateTradesViewModel { get; }
 
         public bool UpdateAccountEnabled => !_updatingAccount;
 
@@ -318,6 +323,7 @@ namespace TraderTools.TradeLog.ViewModels
                     SaveTrades();
 
                     SummaryViewModel.Update(Trades.ToList());
+                    SimulateTradesViewModel.Update(Trades.ToList());
 
                     progressViewActions.close();
                 });
@@ -340,6 +346,7 @@ namespace TraderTools.TradeLog.ViewModels
                 SaveTrades();
                 ResultsViewModel.UpdateResults();
                 SummaryViewModel.Update(Trades.ToList());
+                SimulateTradesViewModel.Update(Trades.ToList());
             }
         }
 
@@ -380,6 +387,7 @@ namespace TraderTools.TradeLog.ViewModels
 
             ResultsViewModel.UpdateResults();
             SummaryViewModel.Update(Trades.ToList());
+            SimulateTradesViewModel.Update(Trades.ToList());
         }
 
         private void LoginOut()
