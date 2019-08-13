@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Reflection;
@@ -13,38 +14,48 @@ using TraderTools.Simulation;
 
 namespace TraderTools.TradeLog.ViewModels
 {
-    public class TradeWithSimulation : Trade
+    public class SimTrade : Trade
     {
-        private decimal? _rMultipleSimulation;
-        private decimal? _simEntryPrice;
-        private decimal? _simClosePrice;
-
-        public decimal? RMultipleSimulation
+        private decimal? _originalRMultiple;
+        private decimal? _originalEntryPrice;
+        private decimal? _originalClosePrice;
+        private string _originalStatus;
+        public decimal? OriginalRMultiple
         {
-            get => _rMultipleSimulation;
+            get => _originalRMultiple;
             set
             {
-                _rMultipleSimulation = value;
+                _originalRMultiple = value;
                 OnPropertyChanged();
             }
         }
 
-        public decimal? SimEntryPrice
+        public decimal? OriginalEntryPrice
         {
-            get => _simEntryPrice;
+            get => _originalEntryPrice;
             set
             {
-                _simEntryPrice = value;
+                _originalEntryPrice = value;
                 OnPropertyChanged();
             }
         }
 
-        public decimal? SimClosePrice
+        public decimal? OriginalClosePrice
         {
-            get => _simClosePrice;
+            get => _originalClosePrice;
             set
             {
-                _simClosePrice = value;
+                _originalClosePrice = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string OriginalStatus
+        {
+            get => _originalStatus;
+            set
+            {
+                _originalStatus = value;
                 OnPropertyChanged();
             }
         }
@@ -58,25 +69,78 @@ namespace TraderTools.TradeLog.ViewModels
         [Import] private ITradeDetailsAutoCalculatorService _tradeCalculatorService;
         [Import] private IMarketDetailsService _marketDetailsService;
         [Import] private BrokersService _brokersService;
-        private IBroker _broker;
+        private List<Trade> _originalTrades = new List<Trade>();
+        private decimal? _totalSimR;
+        private decimal? _totalOriginalR;
 
         public SimulateExistingTradesViewModel()
         {
             DependencyContainer.ComposeParts(this);
             RunSimulationCommand = new DelegateCommand(o => RunSimulation());
-            _broker = _brokersService.Brokers.First(b => b.Name == "FXCM");
+            Broker = _brokersService.Brokers.First(b => b.Name == "FXCM");
+
+            LargeChartTimeframe = Timeframe.M1;
+            SmallChartTimeframe = Timeframe.H2;
+
+            ViewTradeCommand = new DelegateCommand(o =>
+            {
+                ViewTradeCommand.RaiseCanExecuteChanged();
+
+                Task.Run(() =>
+                {
+                    ViewTrade(SelectedTrade, false);
+
+                    _dispatcher.Invoke(() =>
+                    {
+                        ViewTradeCommand.RaiseCanExecuteChanged();
+                    });
+                });
+            });
+
+            ResultsViewModel = new TradesResultsViewModel(() =>
+            {
+                lock (Trades)
+                {
+                    return Trades.ToList();
+                }
+            })
+            {
+                ShowProfit = true,
+                AdvStrategyNaming = true,
+                ShowSubOptions = true,
+                SubItemsIndex = 1
+            };
         }
+
+        public TradesResultsViewModel ResultsViewModel { get; }
 
         public DelegateCommand RunSimulationCommand { get; private set; }
 
+        public decimal? TotalSimR
+        {
+            get { return _totalSimR; }
+            set
+            {
+                _totalSimR = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public decimal? TotalOriginalR
+        {
+            get => _totalOriginalR;
+            set
+            {
+                _totalOriginalR = value;
+                OnPropertyChanged();
+            }
+        }
+
         private void RunSimulation()
         {
-            foreach(var t in Trades.Cast<TradeWithSimulation>())
-            {
-                t.RMultipleSimulation = null;
-                t.SimClosePrice = null;
-                t.SimEntryPrice = null;
-            }
+            Trades.Clear();
+            ResultsViewModel.UpdateResults();
+            TotalSimR = null;
 
             Task.Run(() =>
             {
@@ -84,7 +148,7 @@ namespace TraderTools.TradeLog.ViewModels
                 var marketsCompleted = 0;
                 var totalMarketsForSimulation = 0;
 
-                var producerConsumer = new ProducerConsumer<(MarketDetails Market, List<Trade> Orders)>(3,
+                var producerConsumer = new ProducerConsumer<(MarketDetails Market, List<SimTrade> Orders)>(3,
                     d =>
                 {
                     Log.Info($"Running simulation for {d.Market.Name} and {d.Orders.Count} trades");
@@ -92,59 +156,100 @@ namespace TraderTools.TradeLog.ViewModels
                     var closedTrades = new List<Trade>();
 
                     var runner = new SimulationRunner(_candlesService, _tradeCalculatorService, _marketDetailsService);
-                    var timeframes = new Timeframe[] { };
-                    var timeframesAllCandles = runner.PopulateCandles(_broker, d.Market.Name, true, timeframes, null, 
-                            false, false, null, null, _candlesService, out var m1Candles);
+                    var timeframes = new[] { Timeframe.H2, Timeframe.M15 };
+                    var timeframeIndicatorsRequired = new TimeframeLookup<Indicator[]>();
+                    timeframeIndicatorsRequired[Timeframe.H2] = new[] { Indicator.EMA8, Indicator.ATR };
 
-                    runner.SimulateTrades(null, d.Market, d.Orders, openTrades, closedTrades,
-                        timeframes.ToList(), m1Candles, timeframesAllCandles);
+                    var timeframesAllCandles = runner.PopulateCandles(Broker, d.Market.Name, true, timeframes, timeframeIndicatorsRequired,
+                            true, false, null, null, _candlesService, out var m1Candles);
 
-                    allTrades.AddRange(d.Orders);
-                    allTrades.AddRange(openTrades);
-                    allTrades.AddRange(closedTrades);
+                    runner.SimulateTrades(
+                        null, d.Market, d.Orders.Cast<Trade>().ToList(), openTrades, closedTrades,
+                        timeframes.ToList(), m1Candles, timeframesAllCandles,
+                        UpdateOpenTradesAction);
+
+                    foreach (var t in d.Orders.Union(openTrades).Union(closedTrades))
+                    {
+                        _tradeCalculatorService.RecalculateTrade(t, CalculateOptions.IncludeOpenTradesInRMultipleCalculation);
+                        allTrades.Add(t);
+                    }
 
                     Interlocked.Increment(ref marketsCompleted);
                     Log.Info($"Completed {marketsCompleted}/{totalMarketsForSimulation} markets");
 
                     _dispatcher.Invoke(() =>
                     {
-                        // Update trades
-                        foreach (var t in d.Orders.Union(openTrades).Union(closedTrades))
-                        {
-                            var simulatedTrade = (TradeWithSimulation)Trades.FirstOrDefault(x => x.Id == t.Id);
-                            if (simulatedTrade != null)
-                            {
-                                simulatedTrade.RMultipleSimulation = t.RMultiple;
-                                simulatedTrade.SimEntryPrice = t.EntryPrice;
-                                simulatedTrade.SimClosePrice = t.ClosePrice;
-                            }
-                        }
+                        Trades.AddRange(d.Orders.Union(openTrades).Union(closedTrades));
+                        TotalSimR = Trades.Where(t => t.RMultiple != null).Sum(t => t.RMultiple.Value);
+                        TotalOriginalR = Trades.Cast<SimTrade>().Where(t => t.OriginalRMultiple != null).Sum(t => t.OriginalRMultiple.Value);
+                        ResultsViewModel.UpdateResults();
                     });
 
                     return ProducerConsumerActionResult.Success;
                 });
 
                 // Create orders
-                foreach (var groupedTrades in Trades.GroupBy(t => t.Market))
+                foreach (var groupedTrades in _originalTrades.GroupBy(t => t.Market))
                 {
                     var market = _marketDetailsService.GetMarketDetails("FXCM", groupedTrades.Key);
                     totalMarketsForSimulation++;
 
                     var orders = groupedTrades.Select(t =>
                     {
-                        var ret = new Trade();
-                        _tradeCalculatorService.AddTrade(ret);
-                        CopyTradeDetails(t, ret);
+                        var ret = CopyOriginalTradeForSimulation(t);
+
+                        // For market entry trades, set the order price as the entry price
+                        if (ret.OrderPrice == null && ret.EntryDateTime != null)
+                        {
+                            ret.AddOrderPrice(ret.EntryDateTime.Value, ret.EntryPrice);
+                            ret.OrderPrice = ret.EntryPrice;
+                            ret.OrderDateTime = new DateTime(ret.EntryDateTime.Value.Ticks, DateTimeKind.Utc);
+                        }
+
                         ret.EntryDateTime = null;
                         ret.CloseDateTime = null;
                         ret.NetProfitLoss = null;
-                        ret.RMultiple = null;
                         ret.EntryPrice = null;
                         ret.OrderAmount = ret.OrderAmount ?? ret.EntryQuantity;
                         ret.EntryQuantity = null;
                         ret.ClosePrice = null;
                         ret.CloseReason = null;
                         ret.CloseDateTime = null;
+                        ret.RiskAmount = null;
+                        ret.EntryPrice = null;
+                        ret.NetProfitLoss = null;
+                        ret.GrossProfitLoss = null;
+                        ret.RMultiple = null;
+
+                        //if (!ret.Strategies.Contains("Channel"))
+                        // {
+                        ret.Custom1 = (int)StopUpdateStrategy.StopTrailIndicator;
+                        ret.Custom2 = (int)Timeframe.H2;
+                        ret.Custom3 = (int)Indicator.EMA8;
+
+                        // Single stop price
+                        if (ret.StopPrices.Count > 0)
+                        {
+                            for (var i = ret.StopPrices.Count - 1; i >= 1; i--)
+                            {
+                                ret.StopPrices.RemoveAt(i);
+                            }
+                        }
+
+                        // No limit
+                        ret.LimitPrices.Clear();
+                        ret.LimitPrice = null;
+                        //}
+
+                        // Fixed 3R limit
+                        /*if (ret.StopPrices.Count > 0 && ret.OrderPrice != null)
+                        {
+                            var limit = ret.OrderPrice.Value + ((ret.OrderPrice.Value - ret.StopPrices[0].Price.Value) * 3M);
+
+                            ret.LimitPrices.Clear();
+                            ret.AddLimitPrice(ret.StopPrices[0].Date, limit);
+                            ret.LimitPrice = limit;
+                        }*/
 
                         return ret;
                     }).ToList();
@@ -159,25 +264,48 @@ namespace TraderTools.TradeLog.ViewModels
             });
         }
 
-        public void Update(List<Trade> trades)
+        private enum StopUpdateStrategy
         {
-            Trades.Clear();
-            foreach (var trade in trades)
-            {
-                if (trade.StopPrices.Count != 1 || trade.LimitPrices.Count != 1 || trade.RMultiple == null || trade.CloseDateTime == null) continue;
+            StopTrailIndicator = 1
+        }
 
-                var t = CreateTrade(trade);
-                Trades.Add(t);
+        private void UpdateOpenTradesAction(UpdateTradeParameters p)
+        {
+            if (p.Trade.Custom1 == (int)StopUpdateStrategy.StopTrailIndicator && p.Trade.Custom2 != null && p.Trade.Custom3 != null)
+            {
+                StopHelper.TrailIndicator(p.Trade, (Timeframe)p.Trade.Custom2.Value, (Indicator)p.Trade.Custom3.Value, p.TimeframeCurrentCandles, p.TimeTicks);
             }
         }
 
-        private static void CopyTradeDetails(Trade tradeFrom, Trade tradeTo)
+        public void Update(List<Trade> trades)
         {
+            _originalTrades.Clear();
+            //var earliest = new DateTime(2019, 5, 1);
+            //var latest = new DateTime(2019, 8, 1);
+            var earliest = new DateTime(2019, 3, 1);
+            var latest = new DateTime(2019, 4, 1);
+            foreach (var trade in trades.Where(t =>
+                (t.OrderDateTime >= earliest || t.EntryDateTime >= earliest) && t.CloseDateTime != null && t.CloseDateTime <= latest && t.CloseReason != TradeCloseReason.ManualClose))
+            {
+                if (trade.RMultiple == null) continue;
+                //if (trade.Id != "34728772") continue;
+
+                // Order datetime should be 15:57 local time?
+
+                // var t = CreateTrade(trade);
+                _originalTrades.Add(trade);
+            }
+        }
+
+        private static SimTrade CopyOriginalTradeForSimulation(Trade tradeFrom)
+        {
+            var tradeTo = new SimTrade();
             tradeTo.Id = tradeFrom.Id;
             tradeTo.Market = tradeFrom.Market;
             tradeTo.EntryDateTime = tradeFrom.EntryDateTime;
-            tradeTo.StopPrices = new List<DatePrice> { tradeFrom.StopPrices[0] };
-            tradeTo.LimitPrices = new List<DatePrice> { tradeFrom.LimitPrices[0] };
+            tradeTo.StopPrices = tradeFrom.StopPrices.OrderBy(s => s.Date).ToList();
+            tradeTo.LimitPrices = tradeFrom.LimitPrices.OrderBy(s => s.Date).ToList();
+
             tradeTo.BaseAsset = tradeFrom.BaseAsset;
             tradeTo.Broker = tradeFrom.Broker;
             tradeTo.CloseDateTime = tradeFrom.CloseDateTime;
@@ -200,7 +328,7 @@ namespace TraderTools.TradeLog.ViewModels
             tradeTo.LimitPrice = tradeFrom.LimitPrice;
             tradeTo.InitialStopInPips = tradeFrom.InitialStopInPips;
             tradeTo.OrderKind = tradeFrom.OrderKind;
-            tradeTo.OrderPrices = tradeFrom.OrderPrices.ToList();
+            tradeTo.OrderPrices = tradeFrom.OrderPrices.OrderBy(s => s.Date).ToList();
             tradeTo.OrderPrice = tradeFrom.OrderPrice;
             tradeTo.InitialStop = tradeFrom.InitialStop;
             tradeTo.OrderType = tradeFrom.OrderType;
@@ -216,14 +344,13 @@ namespace TraderTools.TradeLog.ViewModels
             tradeTo.NetProfitLoss = tradeFrom.NetProfitLoss;
             tradeTo.LimitInPips = tradeFrom.LimitInPips;
             tradeTo.InitialLimitInPips = tradeFrom.InitialLimitInPips;
-        }
 
-        private static TradeWithSimulation CreateTrade(Trade trade)
-        {
-            var t = new TradeWithSimulation();
-            CopyTradeDetails(trade, t);
+            tradeTo.OriginalClosePrice = tradeFrom.ClosePrice;
+            tradeTo.OriginalEntryPrice = tradeFrom.EntryPrice;
+            tradeTo.OriginalRMultiple = tradeFrom.RMultiple;
+            tradeTo.OriginalStatus = tradeFrom.Status;
 
-            return t;
+            return tradeTo;
         }
     }
 }

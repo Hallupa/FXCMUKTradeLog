@@ -102,7 +102,8 @@ namespace TraderTools.TradeLog.ViewModels
                                       | TradeListDisplayOptionsFlag.ClosePrice
                                       | TradeListDisplayOptionsFlag.Strategies
                                       | TradeListDisplayOptionsFlag.Status
-                                      | TradeListDisplayOptionsFlag.Risk;
+                                      | TradeListDisplayOptionsFlag.Risk
+                                      | TradeListDisplayOptionsFlag.Rollover;
 
             _loginOutButtonText = "Login";
             _dispatcher = Dispatcher.CurrentDispatcher;
@@ -133,8 +134,7 @@ namespace TraderTools.TradeLog.ViewModels
             {
                 if (_fxcm.Status != ConnectStatus.Connected)
                 {
-                    MessageBox.Show("Login to get price data", "Login to FXCM", MessageBoxButton.OK);
-                    return;
+                    MessageBox.Show("Login to get latest price data", "Login to FXCM", MessageBoxButton.OK);
                 }
 
                 var progressViewActions = _createProgressingViewFunc();
@@ -143,7 +143,7 @@ namespace TraderTools.TradeLog.ViewModels
 
                 Task.Run(() =>
                 {
-                    ViewTrade(SelectedTrade);
+                    ViewTrade(SelectedTrade, _fxcm.Status == ConnectStatus.Connected);
 
                     _dispatcher.Invoke(() =>
                     {
@@ -191,7 +191,7 @@ namespace TraderTools.TradeLog.ViewModels
             {
                 ShowProfit = true,
                 AdvStrategyNaming = true,
-                ShowSubOptions = false,
+                ShowSubOptions = true,
                 SubItemsIndex = 1
             };
 
@@ -268,8 +268,6 @@ namespace TraderTools.TradeLog.ViewModels
         }
 
         public DelegateCommand UpdateAccountCommand { get; }
-        public DelegateCommand ViewTradeCommand { get; }
-        public DelegateCommand ViewTradeSetupCommand { get; }
         [Import] public BrokersService BrokersService { get; private set; }
         [Import] public IBrokersCandlesService BrokerCandleService { get; private set; }
 
@@ -399,6 +397,7 @@ namespace TraderTools.TradeLog.ViewModels
             }
 
             LoginOutButtonEnabled = false;
+            var loginAttempted = false;
 
             if (_fxcm.Status != ConnectStatus.Connected)
             {
@@ -410,15 +409,19 @@ namespace TraderTools.TradeLog.ViewModels
                     {
                         try
                         {
+                            loginAttempted = true;
                             _fxcm.SetUsernamePassword(username, password);
                             _fxcm.Connect();
 
-                            foreach (var marketDetails in _fxcm.GetMarketDetailsList())
+                            if (_fxcm.Status == ConnectStatus.Connected)
                             {
-                                _marketsService.AddMarketDetails(marketDetails);
-                            }
+                                foreach (var marketDetails in _fxcm.GetMarketDetailsList())
+                                {
+                                    _marketsService.AddMarketDetails(marketDetails);
+                                }
 
-                            _marketsService.SaveMarketDetailsList();
+                                _marketsService.SaveMarketDetailsList();
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -428,17 +431,6 @@ namespace TraderTools.TradeLog.ViewModels
                         _dispatcher.Invoke(() =>
                         {
                             progressViewActions.close();
-                            LoginOutButtonEnabled = true;
-
-                            if (_fxcm.Status == ConnectStatus.Connected)
-                            {
-                                LoginOutButtonText = "Logout";
-                            }
-                            else
-                            {
-                                LoginOutButtonText = "Login";
-                                MessageBox.Show("Unable to login", "Failed", MessageBoxButton.OK);
-                            }
                         });
                     });
 
@@ -461,6 +453,22 @@ namespace TraderTools.TradeLog.ViewModels
                         LoginOutButtonText = "Login";
                     });
                 });
+            }
+
+            LoginOutButtonEnabled = true;
+
+            if (_fxcm.Status == ConnectStatus.Connected)
+            {
+                LoginOutButtonText = "Logout";
+            }
+            else
+            {
+                LoginOutButtonText = "Login";
+
+                if (loginAttempted)
+                {
+                    MessageBox.Show("Unable to login", "Failed", MessageBoxButton.OK);
+                }
             }
         }
 

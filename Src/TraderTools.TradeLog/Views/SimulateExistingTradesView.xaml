@@ -9,6 +9,7 @@
              xmlns:tokenEditor="clr-namespace:Hallupa.Library.UI.TokenEditor;assembly=Hallupa.Library.UI"
              xmlns:converters="clr-namespace:TraderTools.Core.UI.Converters;assembly=TraderTools.Core.UI"
              xmlns:converters1="clr-namespace:Hallupa.Library.UI.Converters;assembly=Hallupa.Library.UI"
+             xmlns:ui1="clr-namespace:TraderTools.Core.UI;assembly=TraderTools.Core.UI"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
@@ -23,134 +24,180 @@
             </Style>
         </Grid.Resources>
 
-        <DataGrid ItemsSource="{Binding Path=Trades, IsAsync=True}" EnableRowVirtualization="true" AutoGenerateColumns="False" GridLinesVisibility="Horizontal"
-                  SelectedItem="{Binding SelectedTrade}" CanUserDeleteRows="False"
-                  CanUserAddRows="False" x:Name="MainDataGrid" ClipboardCopyMode="IncludeHeader">
-            <DataGrid.Resources>
-                <ui:BindingProxy x:Key="Proxy" Data="{Binding}" />
-            </DataGrid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="3*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="2.5*"/>
+        </Grid.RowDefinitions>
 
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Id" Binding="{Binding Id, Mode=OneWay}" IsReadOnly="True" Width="70" />
-                <DataGridTextColumn Header="Status" Binding="{Binding Status, Mode=OneWay}" IsReadOnly="True" Width="75">
-                    <DataGridTextColumn.CellStyle>
-                        <Style TargetType="{x:Type DataGridCell}">
-                            <Setter Property="Background" Value="{Binding ., Converter={StaticResource StatusToColour}}" />
-                            <Setter Property="Foreground" Value="Black"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Foreground" Value="Black"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGridTextColumn.CellStyle>
-                </DataGridTextColumn>
-                <DataGridTextColumn Header="Market" Binding="{Binding Market, Mode=OneWay}" IsReadOnly="True" Width="80" />
-                <DataGridTextColumn Header="Order date" Binding="{Binding OrderDateTimeLocal, StringFormat={}{0:dd-MM-yy HH:mm}, Mode=OneWay}" IsReadOnly="True" Width="100"/>
-                <DataGridTextColumn Header="Order price" Binding="{Binding OrderPrice, StringFormat={}{0:0.0000}, Mode=OneWay}" IsReadOnly="True" Width="75"/>
-                <DataGridTextColumn Header="Entry price" Binding="{Binding EntryPrice, StringFormat={}{0:0.0000}, Mode=OneWay}" IsReadOnly="True" Width="68"/>
-                <DataGridTextColumn Header="Close price" Binding="{Binding ClosePrice, StringFormat={}{0:0.0000}, Mode=OneWay}" IsReadOnly="True" Width="68"/>
-                <DataGridTextColumn Header="Sim entry price" Binding="{Binding SimEntryPrice, StringFormat={}{0:0.0000}, Mode=OneWay}" IsReadOnly="True" Width="90"/>
-                <DataGridTextColumn Header="Sim close price" Binding="{Binding SimClosePrice, StringFormat={}{0:0.0000}, Mode=OneWay}" IsReadOnly="True" Width="90"/>
-                <DataGridTextColumn Header="L/S" Binding="{Binding TradeDirection}" FontWeight="Bold" IsReadOnly="True" Width="40"/>
-                <DataGridTextColumn Header="£/pip" Binding="{Binding PricePerPip, StringFormat={}{0:0.00}}" IsReadOnly="True" Width="50"/>
+        <ui1:DoubleChartView Grid.Column="0" Grid.Row="0"/>
 
-                <DataGridTemplateColumn Header="Initial &amp; Current Stop" Width="140">
-                    <DataGridTemplateColumn.CellStyle>
-                        <Style TargetType="{x:Type DataGridCell}">
-                            <Setter Property="Background" Value="#11FF0000" />
-                            <Style.Triggers>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Foreground" Value="Black"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGridTemplateColumn.CellStyle>
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="70"/>
-                                    <ColumnDefinition Width="70"/>
-                                </Grid.ColumnDefinitions>
+        <GridSplitter Grid.Row="1" Height="7" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
 
-                                <TextBlock Grid.Row="0" Margin="2" Text="{Binding InitialStop, StringFormat={}{0:0.000}, Mode=OneWay}"/>
-                                <TextBlock Grid.Row="1" Grid.Column="0" Margin="2" Text="{Binding InitialStopInPips, StringFormat={}{0:0.0 pips}, Mode=OneWay}"/>
+        <TabControl Grid.Row="2">
+            <TabItem Header="Trades">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                                <TextBlock Grid.Row="0" Grid.Column="1" Margin="2" Text="{Binding StopPrice, StringFormat={}{0:0.000}, Mode=OneWay}"/>
-                            </Grid>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                    <DataGrid Grid.Row="0" ItemsSource="{Binding Path=Trades, IsAsync=True}" EnableRowVirtualization="true" AutoGenerateColumns="False" GridLinesVisibility="Horizontal"
+                          SelectedItem="{Binding SelectedTrade}" CanUserDeleteRows="False"
+                          CanUserAddRows="False" x:Name="MainDataGrid" ClipboardCopyMode="IncludeHeader">
+                        <DataGrid.Resources>
+                            <ui:BindingProxy x:Key="Proxy" Data="{Binding}" />
+                        </DataGrid.Resources>
 
-                <DataGridTemplateColumn Header="Initial &amp; Current Limit" Width="140">
-                    <DataGridTemplateColumn.CellStyle>
-                        <Style TargetType="{x:Type DataGridCell}">
-                            <Setter Property="Background" Value="#1100FF00" />
-                            <Style.Triggers>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Foreground" Value="Black"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGridTemplateColumn.CellStyle>
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="70"/>
-                                    <ColumnDefinition Width="70"/>
-                                </Grid.ColumnDefinitions>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Id" Binding="{Binding Id, Mode=OneWay}" IsReadOnly="True" Width="70" />
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status, Mode=OneWay}" IsReadOnly="True" Width="75">
+                                <DataGridTextColumn.CellStyle>
+                                    <Style TargetType="{x:Type DataGridCell}">
+                                        <Setter Property="Background" Value="{Binding ., Converter={StaticResource StatusToColour}}" />
+                                        <Setter Property="Foreground" Value="Black"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Foreground" Value="Black"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.CellStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Market" Binding="{Binding Market, Mode=OneWay}" IsReadOnly="True" Width="80" />
+                            <DataGridTextColumn Header="Order date" Binding="{Binding OrderDateTimeLocal, StringFormat={}{0:dd-MM-yy HH:mm}, Mode=OneWay}" IsReadOnly="True" Width="100"/>
+                            <DataGridTextColumn Header="Order price" Binding="{Binding OrderPrice, StringFormat={}{0:0.0000}, Mode=OneWay}" IsReadOnly="True" Width="75"/>
+                            <DataGridTextColumn Header="Entry price" Binding="{Binding EntryPrice, StringFormat={}{0:0.0000}, Mode=OneWay}" IsReadOnly="True" Width="68"/>
+                            <DataGridTextColumn Header="Close price" Binding="{Binding ClosePrice, StringFormat={}{0:0.0000}, Mode=OneWay}" IsReadOnly="True" Width="68"/>
+                            <DataGridTextColumn Header="L/S" Binding="{Binding TradeDirection}" FontWeight="Bold" IsReadOnly="True" Width="40"/>
+                            <DataGridTextColumn Header="£/pip" Binding="{Binding PricePerPip, StringFormat={}{0:0.00}}" IsReadOnly="True" Width="50"/>
 
-                                <TextBlock Grid.Row="0" Margin="2" Text="{Binding InitialLimit, StringFormat={}{0:0.000}, Mode=OneWay}"/>
-                                <TextBlock Grid.Row="1" Grid.Column="0" Margin="2" Text="{Binding InitialLimitInPips, StringFormat={}{0:0.0 pips}, Mode=OneWay}"/>
+                            <DataGridTemplateColumn Header="Initial &amp; Current Stop" Width="140">
+                                <DataGridTemplateColumn.CellStyle>
+                                    <Style TargetType="{x:Type DataGridCell}">
+                                        <Setter Property="Background" Value="#11FF0000" />
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Foreground" Value="Black"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTemplateColumn.CellStyle>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="70"/>
+                                            </Grid.ColumnDefinitions>
 
-                                <TextBlock Grid.Row="0" Grid.Column="1" Margin="2" Text="{Binding LimitPrice, StringFormat={}{0:0.000}, Mode=OneWay}"/>
-                            </Grid>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                                            <TextBlock Grid.Row="0" Margin="2" Text="{Binding InitialStop, StringFormat={}{0:0.000}, Mode=OneWay}"/>
+                                            <TextBlock Grid.Row="1" Grid.Column="0" Margin="2" Text="{Binding InitialStopInPips, StringFormat={}{0:0.0 pips}, Mode=OneWay}"/>
 
-                <DataGridTextColumn Header="Result R" Binding="{Binding RMultiple, StringFormat={}{0:0.00}, Mode=OneWay}" IsReadOnly="True" Width="60">
-                    <DataGridTextColumn.CellStyle>
-                        <Style TargetType="{x:Type DataGridCell}">
-                            <Setter Property="Background" Value="{Binding RMultiple, Converter={StaticResource ValueToColour}}" />
-                            <Setter Property="Foreground" Value="Black"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Foreground" Value="Black"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGridTextColumn.CellStyle>
-                </DataGridTextColumn>
+                                            <TextBlock Grid.Row="0" Grid.Column="1" Margin="2" Text="{Binding StopPrice, StringFormat={}{0:0.000}, Mode=OneWay}"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
 
-                <DataGridTextColumn Header="Res R Sim" Binding="{Binding RMultipleSimulation, StringFormat={}{0:0.00}, Mode=OneWay}" IsReadOnly="True" Width="65">
-                    <DataGridTextColumn.CellStyle>
-                        <Style TargetType="{x:Type DataGridCell}">
-                            <Setter Property="Background" Value="{Binding RMultipleSimulation, Converter={StaticResource ValueToColour}}" />
-                            <Setter Property="Foreground" Value="Black"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Foreground" Value="Black"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGridTextColumn.CellStyle>
-                </DataGridTextColumn>
+                            <DataGridTemplateColumn Header="Initial &amp; Current Limit" Width="140">
+                                <DataGridTemplateColumn.CellStyle>
+                                    <Style TargetType="{x:Type DataGridCell}">
+                                        <Setter Property="Background" Value="#1100FF00" />
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Foreground" Value="Black"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTemplateColumn.CellStyle>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="70"/>
+                                            </Grid.ColumnDefinitions>
 
-                <DataGridTextColumn Header="Order date" Binding="{Binding OrderDateTimeLocal, StringFormat={}{0:dd-MM-yy HH:mm}, Mode=OneWay}" IsReadOnly="True" Width="100"/>
-                <DataGridTextColumn Header="Entry date" Binding="{Binding EntryDateTimeLocal, StringFormat={}{0:dd-MM-yy HH:mm}, Mode=OneWay}" IsReadOnly="True" Width="100"/>
-                <DataGridTextColumn Header="Close date" Binding="{Binding CloseDateTimeLocal, StringFormat={}{0:dd-MM-yy HH:mm}, Mode=OneWay}" IsReadOnly="True" Width="100"/>
-            </DataGrid.Columns>
-        </DataGrid>
+                                            <TextBlock Grid.Row="0" Margin="2" Text="{Binding InitialLimit, StringFormat={}{0:0.000}, Mode=OneWay}"/>
+                                            <TextBlock Grid.Row="1" Grid.Column="0" Margin="2" Text="{Binding InitialLimitInPips, StringFormat={}{0:0.0 pips}, Mode=OneWay}"/>
+
+                                            <TextBlock Grid.Row="0" Grid.Column="1" Margin="2" Text="{Binding LimitPrice, StringFormat={}{0:0.000}, Mode=OneWay}"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTextColumn Header="Result R" Binding="{Binding RMultiple, StringFormat={}{0:0.00}, Mode=OneWay}" IsReadOnly="True" Width="60">
+                                <DataGridTextColumn.CellStyle>
+                                    <Style TargetType="{x:Type DataGridCell}">
+                                        <Setter Property="Background" Value="{Binding RMultiple, Converter={StaticResource ValueToColour}}" />
+                                        <Setter Property="Foreground" Value="Black"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Foreground" Value="Black"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.CellStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="Original entry" Binding="{Binding OriginalEntryPrice, StringFormat={}{0:0.0000}, Mode=OneWay}" IsReadOnly="True" Width="95"/>
+                            <DataGridTextColumn Header="Original close" Binding="{Binding OriginalClosePrice, StringFormat={}{0:0.0000}, Mode=OneWay}" IsReadOnly="True" Width="95"/>
+
+                            <DataGridTextColumn Header="Original Res R" Binding="{Binding OriginalRMultiple, StringFormat={}{0:0.00}, Mode=OneWay}" IsReadOnly="True" Width="75">
+                                <DataGridTextColumn.CellStyle>
+                                    <Style TargetType="{x:Type DataGridCell}">
+                                        <Setter Property="Background" Value="{Binding OriginalRMultiple, Converter={StaticResource ValueToColour}}" />
+                                        <Setter Property="Foreground" Value="Black"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Foreground" Value="Black"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.CellStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="Original status" Binding="{Binding OriginalStatus, Mode=OneWay}" IsReadOnly="True" Width="95">
+                                <DataGridTextColumn.CellStyle>
+                                    <Style TargetType="{x:Type DataGridCell}">
+                                        <Setter Property="Background" Value="{Binding ., Converter={StaticResource StatusToColour}}" />
+                                        <Setter Property="Foreground" Value="Black"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Foreground" Value="Black"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.CellStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="Order date" Binding="{Binding OrderDateTimeLocal, StringFormat={}{0:dd-MM-yy HH:mm}, Mode=OneWay}" IsReadOnly="True" Width="100"/>
+                            <DataGridTextColumn Header="Entry date" Binding="{Binding EntryDateTimeLocal, StringFormat={}{0:dd-MM-yy HH:mm}, Mode=OneWay}" IsReadOnly="True" Width="100"/>
+                            <DataGridTextColumn Header="Close date" Binding="{Binding CloseDateTimeLocal, StringFormat={}{0:dd-MM-yy HH:mm}, Mode=OneWay}" IsReadOnly="True" Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <Label>Simulated total R</Label>
+                        <TextBox Text="{Binding TotalSimR, StringFormat={}{0:0.000}}" Width="150" IsReadOnly="True"/>
+                        <Label>Orginal total R</Label>
+                        <TextBox Text="{Binding TotalOriginalR, StringFormat={}{0:0.000}}" Width="150" IsReadOnly="True"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Results">
+                <views:TradesResultsControl DataContext="{Binding ResultsViewModel}"/>
+            </TabItem>
+        </TabControl>
     </Grid>
 </UserControl>

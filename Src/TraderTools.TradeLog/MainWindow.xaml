@@ -47,7 +47,7 @@
                     <RibbonToggleButton Label="Summary" IsChecked="{Binding Page, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:PageToShow.Summary}, Mode=TwoWay}"/>
                     <RibbonToggleButton Label="Trades" IsChecked="{Binding Page, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:PageToShow.Trades}, Mode=TwoWay}"/>
                     <RibbonToggleButton Label="Results" IsChecked="{Binding Page, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:PageToShow.Results}, Mode=TwoWay}"/>
-                    <RibbonToggleButton Label="Simulate existing trades" IsChecked="{Binding Page, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:PageToShow.SimulateTrades}, Mode=TwoWay}"/>
+                    <!--<RibbonToggleButton Label="Simulate existing trades" IsChecked="{Binding Page, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:PageToShow.SimulateTrades}, Mode=TwoWay}"/>-->
                 </RibbonGroup>
 
                 <RibbonGroup Header="Chart" Visibility="{Binding Page, Converter={StaticResource ObjToVis}, ConverterParameter={x:Static viewModels:PageToShow.Trades}, Mode=OneWay}">
@@ -56,6 +56,11 @@
                     <RibbonToggleButton Label="Zoom" IsChecked="{Binding ChartingService.ChartMode, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static ui:ChartMode.Zoom}, Mode=TwoWay}"/>
                     <RibbonButton Label="View trade" Command="{Binding ViewTradeCommand}"/>
                     <RibbonButton Label="View trade setup" Command="{Binding ViewTradeSetupCommand}"/>
+                </RibbonGroup>
+
+                <RibbonGroup Header="Chart" Visibility="{Binding Page, Converter={StaticResource ObjToVis}, ConverterParameter={x:Static viewModels:PageToShow.SimulateTrades}, Mode=OneWay}">
+                    <RibbonToggleButton Label="Zoom" IsChecked="{Binding ChartingService.ChartMode, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static ui:ChartMode.Zoom}, Mode=TwoWay}"/>
+                    <RibbonButton Label="View simulated trade" Command="{Binding SimulateTradesViewModel.ViewTradeCommand}"/>
                 </RibbonGroup>
 
                 <RibbonGroup Header="Trades" Visibility="{Binding Page, Converter={StaticResource ObjToVis}, ConverterParameter={x:Static viewModels:PageToShow.Trades}, Mode=OneWay}">
