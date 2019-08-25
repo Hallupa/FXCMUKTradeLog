@@ -147,6 +147,7 @@
     </ApplicationDefinition>
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\MainWindowsViewModel.cs" />
+    <Compile Include="ViewModels\SimulateExistingTradesOptionsViewModel.cs" />
     <Compile Include="ViewModels\SimulateExistingTradesViewModel.cs" />
     <Compile Include="ViewModels\SummaryViewModel.cs" />
     <Compile Include="Views\InfoView.xaml.cs">
@@ -157,6 +158,9 @@
     </Compile>
     <Compile Include="Views\ProgressView.xaml.cs">
       <DependentUpon>ProgressView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SimulateExistingTradesOptionsView.xaml.cs">
+      <DependentUpon>SimulateExistingTradesOptionsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SimulateExistingTradesView.xaml.cs">
       <DependentUpon>SimulateExistingTradesView.xaml</DependentUpon>
@@ -185,6 +189,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ProgressView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SimulateExistingTradesOptionsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -150,6 +150,8 @@
                                 </DataGridTextColumn.CellStyle>
                             </DataGridTextColumn>
 
+                            <DataGridTextColumn Header="Diff from original R" Binding="{Binding DiffFromOriginalR, StringFormat={}{0:0.0000}, Mode=OneWay}" IsReadOnly="True" Width="95"/>
+
                             <DataGridTextColumn Header="Original entry" Binding="{Binding OriginalEntryPrice, StringFormat={}{0:0.0000}, Mode=OneWay}" IsReadOnly="True" Width="95"/>
                             <DataGridTextColumn Header="Original close" Binding="{Binding OriginalClosePrice, StringFormat={}{0:0.0000}, Mode=OneWay}" IsReadOnly="True" Width="95"/>
 
@@ -189,9 +191,13 @@
 
                     <StackPanel Grid.Row="1" Orientation="Horizontal">
                         <Label>Simulated total R</Label>
-                        <TextBox Text="{Binding TotalSimR, StringFormat={}{0:0.000}}" Width="150" IsReadOnly="True"/>
+                        <TextBox Text="{Binding TotalSimR, StringFormat={}{0:0.000}}" Width="150" IsReadOnly="True" VerticalContentAlignment="Center"/>
+                        <Label>Simulated open trades</Label>
+                        <TextBox Text="{Binding TotalOpenTrades, StringFormat={}{0:0}}" Width="150" IsReadOnly="True" VerticalContentAlignment="Center"/>
+                        <Label>Total trades</Label>
+                        <TextBox Text="{Binding TotalTrades, StringFormat={}{0:0}}" Width="150" IsReadOnly="True" VerticalContentAlignment="Center"/>
                         <Label>Orginal total R</Label>
-                        <TextBox Text="{Binding TotalOriginalR, StringFormat={}{0:0.000}}" Width="150" IsReadOnly="True"/>
+                        <TextBox Text="{Binding TotalOriginalR, StringFormat={}{0:0.000}}" Width="150" IsReadOnly="True" VerticalContentAlignment="Center"/>
                     </StackPanel>
                 </Grid>
             </TabItem>

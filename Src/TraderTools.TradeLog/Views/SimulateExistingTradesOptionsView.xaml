@@ -1,0 +1,72 @@
+﻿<Window x:Class="TraderTools.TradeLog.Views.SimulateExistingTradesOptionsView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converters="clr-namespace:Hallupa.Library.UI.Converters;assembly=Hallupa.Library.UI"
+        xmlns:viewModels="clr-namespace:TraderTools.TradeLog.ViewModels"
+        mc:Ignorable="d"
+        Title="Simulation options" Height="450" Width="500" WindowStartupLocation="CenterOwner">
+    <Grid>
+        <Grid.Resources>
+            <converters:ObjectToBoolConverter x:Key="ObjToBool"/>
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Text="Simulation will run against all trades that opened and closed in the period. Also doesn't include manually closed trades." Grid.ColumnSpan="3"/>
+
+        <Label Grid.Row="1" Grid.Column="0" Content="Start date"/>
+        <DatePicker Grid.Row="1" Grid.Column="1" SelectedDate="{Binding StartDate}"/>
+
+        <Label Grid.Row="2" Grid.Column="0" Content="End date"/>
+        <DatePicker Grid.Row="2" Grid.Column="1" SelectedDate="{Binding EndDate}"/>
+
+        <TextBlock Grid.Row="3" Grid.ColumnSpan="2" Text="Choose how to run the simulation"/>
+
+        <Label Grid.Row="4" Content="Stop placement"/>
+        <StackPanel Grid.Row="5" Grid.ColumnSpan="3">
+            <RadioButton Content="Original trade's stops including changes" IsChecked="{Binding StopOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:StopOption.Original}, Mode=TwoWay}"/>
+            <RadioButton Content="Initial trade's stop only"  IsChecked="{Binding StopOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:StopOption.InitialStopOnly}, Mode=TwoWay}"/>
+            <RadioButton Content="Initial trade's stop then trail 2 hour 8EMA"  IsChecked="{Binding StopOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:StopOption.InitialStopThenTrail2HR8EMA}, Mode=TwoWay}"/>
+            <RadioButton Content="Initial trade's stop then trail 2 hour 25EMA"  IsChecked="{Binding StopOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:StopOption.InitialStopThenTrail2HR25EMA}, Mode=TwoWay}"/>
+            <RadioButton Content="Initial trade's stop then trail 4 hour 8EMA"  IsChecked="{Binding StopOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:StopOption.InitialStopThenTrail4HR8EMA}, Mode=TwoWay}"/>
+            <RadioButton Content="Initial trade's stop then trail 4 hour 25EMA"  IsChecked="{Binding StopOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:StopOption.InitialStopThenTrail4HR25EMA}, Mode=TwoWay}"/>
+            <RadioButton Content="Dynamic trailing stop"  IsChecked="{Binding StopOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:StopOption.DynamicTrailingStop}, Mode=TwoWay}"/>
+        </StackPanel>
+
+        <Label Grid.Row="6" Content="Limit placement"/>
+        <StackPanel Grid.Row="7" Grid.ColumnSpan="3">
+            <RadioButton Content="Original trade's limit including changes" IsChecked="{Binding LimitOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:LimitOption.Original}, Mode=TwoWay}"/>
+            <RadioButton Content="Fixed 3R limit" IsChecked="{Binding LimitOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:LimitOption.Fixed3RLimit}, Mode=TwoWay}"/>
+            <RadioButton Content="No limit" IsChecked="{Binding LimitOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:LimitOption.None}, Mode=TwoWay}"/>
+        </StackPanel>
+
+        <Label Grid.Row="8" Content="Order placement"/>
+        <StackPanel Grid.Row="9" Grid.ColumnSpan="3">
+            <RadioButton Content="Original" IsChecked="{Binding OrderOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:OrderOption.Original}, Mode=TwoWay}"/>
+            <RadioButton Content="Order +0.1% worse" IsChecked="{Binding OrderOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:OrderOption.OriginalOrderPoint1PercentWorse}, Mode=TwoWay}"/>
+            <RadioButton Content="Order +0.1% better" IsChecked="{Binding OrderOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:OrderOption.OriginalOrderPoint1PercentBetter}, Mode=TwoWay}"/>
+            <RadioButton Content="Order +0.2% better" IsChecked="{Binding OrderOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:OrderOption.OriginalOrderPoint2PercentBetter}, Mode=TwoWay}"/>
+            <RadioButton Content="Order +0.5% better" IsChecked="{Binding OrderOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:OrderOption.OriginalOrderPoint5PercentBetter}, Mode=TwoWay}"/>
+        </StackPanel>
+
+        <Button Grid.Row="10" Grid.ColumnSpan="3" HorizontalAlignment="Center" Content="Run simulation" Margin="3" Padding="10,3,10,3" Command="{Binding RunSimulationCommand}"/>
+    </Grid>
+</Window>

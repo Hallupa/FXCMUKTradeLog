@@ -57,6 +57,7 @@ namespace TraderTools.TradeLog.ViewModels
         private PageToShow _page = PageToShow.Summary;
         private bool _editingTrade;
         private bool _refreshUIOnSave;
+        private bool _shownLoginToGetLatestPriceData;
 
         #endregion
 
@@ -132,8 +133,9 @@ namespace TraderTools.TradeLog.ViewModels
             UpdateAccountCommand = new DelegateCommand(o => UpdateAccount(), o => UpdateAccountEnabled);
             ViewTradeCommand = new DelegateCommand(o =>
             {
-                if (_fxcm.Status != ConnectStatus.Connected)
+                if (_fxcm.Status != ConnectStatus.Connected && !_shownLoginToGetLatestPriceData)
                 {
+                    _shownLoginToGetLatestPriceData = true;
                     MessageBox.Show("Login to get latest price data", "Login to FXCM", MessageBoxButton.OK);
                 }
 

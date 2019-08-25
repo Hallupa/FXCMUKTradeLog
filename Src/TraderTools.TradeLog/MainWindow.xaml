@@ -72,6 +72,8 @@
 
                 <RibbonGroup Header="Simulate" Visibility="{Binding Page, Converter={StaticResource ObjToVis}, ConverterParameter={x:Static viewModels:PageToShow.SimulateTrades}, Mode=OneWay}">
                     <RibbonButton Label="Run simulation" Command="{Binding SimulateTradesViewModel.RunSimulationCommand}"/>
+                    <RibbonButton Label="Stop simulation" Command="{Binding SimulateTradesViewModel.StopSimulationCommand}"/>
+                    <RibbonButton Label="Update candles" Command="{Binding SimulateTradesViewModel.UpdateCandlesCommand}"/>
                 </RibbonGroup>
 
             </RibbonTab>
