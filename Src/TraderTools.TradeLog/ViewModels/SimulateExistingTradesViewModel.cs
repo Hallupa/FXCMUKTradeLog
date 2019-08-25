@@ -304,8 +304,8 @@ namespace TraderTools.TradeLog.ViewModels
                             break;
                     }
 
-                    var timeframesAllCandles = runner.PopulateCandles(Broker, d.Market.Name, true, timeframes.ToArray(), timeframeIndicatorsRequired,
-                            true, false, null, null, _candlesService, out var m1Candles);
+                    var timeframesAllCandles = SimulationRunner.PopulateCandles(Broker, d.Market.Name, true, timeframes.ToArray(), timeframeIndicatorsRequired,
+                        _candlesService, out var m1Candles,  true);
 
                     runner.SimulateTrades(
                         d.Market, d.Orders.Cast<Trade>().ToList(), openTrades, closedTrades,
