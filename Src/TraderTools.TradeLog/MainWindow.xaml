@@ -103,7 +103,7 @@
 
                 <GridSplitter Grid.Row="1" Height="7" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
 
-                <views:TradeListControl Grid.Row="2" HideContextMenuDeleteOption="True" HideContextMenuEditOption="True"/>
+                <views:TradeListControl Grid.Row="2" HideContextMenuDeleteOption="True" HideContextMenuEditOption="True" TradeDoubleClickCommand="{Binding ViewTradeCommand}"/>
             </Grid>
         </Grid>
 

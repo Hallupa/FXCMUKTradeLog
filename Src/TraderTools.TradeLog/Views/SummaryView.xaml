@@ -30,7 +30,7 @@
             <Border Grid.Row="1" BorderBrush="DarkGray" BorderThickness="1" Margin="5" Padding="5">
                 <s:SciChartSurface  s:ThemeManager.Theme="Chrome" Margin="0" Padding="2">
                     <s:SciChartSurface.RenderableSeries>
-                        <s:XyScatterRenderableSeries DataSeries="{Binding ProfitPerCompletedTradeData}" SeriesColor="DarkGreen" StrokeThickness="2">
+                        <s:XyScatterRenderableSeries DataSeries="{Binding ProfitPerCompletedTradeSeries}" SeriesColor="DarkGreen" StrokeThickness="2">
                             <s:XyScatterRenderableSeries.PointMarker>
                                 <s:EllipsePointMarker Width="5" Height="5" Fill="SteelBlue" Stroke="SteelBlue" StrokeThickness="1">
                                 </s:EllipsePointMarker>
@@ -70,11 +70,11 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Label FontSize="18" Content="Profit (Completed trades only)"/>
+            <Label FontSize="18" Content="Profit"/>
             <Border Grid.Row="1" BorderBrush="DarkGray" BorderThickness="1" Margin="5" Padding="5">
                 <s:SciChartSurface s:ThemeManager.Theme="Chrome" Padding="2">
                     <s:SciChartSurface.RenderableSeries>
-                        <s:FastLineRenderableSeries DataSeries="{Binding TotalProfitPerCompletedTradesData}" SeriesColor="DarkGreen" StrokeThickness="4"/>
+                        <s:FastLineRenderableSeries DataSeries="{Binding DailyProfitSeries}" SeriesColor="DarkGreen" StrokeThickness="4"/>
                     </s:SciChartSurface.RenderableSeries>
 
                     <s:SciChartSurface.XAxis>
@@ -111,7 +111,7 @@
             <Border Grid.Row="1" BorderBrush="DarkGray" BorderThickness="1" Margin="5" Padding="5">
                 <s:SciChartSurface  s:ThemeManager.Theme="Chrome" Padding="2">
                     <s:SciChartSurface.RenderableSeries>
-                        <s:XyScatterRenderableSeries DataSeries="{Binding RMultiplePerCompletedTradeData}" SeriesColor="DarkGreen" StrokeThickness="2">
+                        <s:XyScatterRenderableSeries DataSeries="{Binding RMultiplePerCompletedTradeSeries}" SeriesColor="DarkGreen" StrokeThickness="2">
                             <s:XyScatterRenderableSeries.PointMarker>
                                 <s:EllipsePointMarker Width="5" Height="5" Fill="SteelBlue" Stroke="SteelBlue" StrokeThickness="1"/>
                             </s:XyScatterRenderableSeries.PointMarker>
@@ -152,11 +152,11 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Label Grid.Row="0" FontSize="18" Content="Monthly profit (Includes open trades)"/>
+            <Label Grid.Row="0" FontSize="18" Content="Monthly profit"/>
             <Border Grid.Row="1" BorderBrush="DarkGray" BorderThickness="1" Margin="5" Padding="5">
                 <s:SciChartSurface  s:ThemeManager.Theme="Chrome" Margin="0" Padding="2">
                     <s:SciChartSurface.RenderableSeries>
-                        <s:FastColumnRenderableSeries DataSeries="{Binding ProfitPerMonth}" SeriesColor="DarkRed" DataPointWidth="0.9"
+                        <s:FastColumnRenderableSeries DataSeries="{Binding ProfitPerMonthSeries}" SeriesColor="DarkRed" DataPointWidth="0.9"
                                                       StrokeThickness="0" Opacity="1.0">
                         </s:FastColumnRenderableSeries>
                     </s:SciChartSurface.RenderableSeries>
