@@ -43,7 +43,7 @@
                     </s:SciChartSurface.XAxis>
 
                     <s:SciChartSurface.YAxis>
-                        <s:NumericAxis GrowBy="0.05, 0.05" DrawMajorBands="True" AxisTitle="Individual trade profit"/>
+                        <s:NumericAxis GrowBy="0.05, 0.05" DrawMajorBands="True" AxisTitle="Trade profit (£)"/>
                     </s:SciChartSurface.YAxis>
 
                     <s:SciChartSurface.ChartModifier>
@@ -74,15 +74,15 @@
             <Border Grid.Row="1" BorderBrush="DarkGray" BorderThickness="1" Margin="5" Padding="5">
                 <s:SciChartSurface s:ThemeManager.Theme="Chrome" Padding="2">
                     <s:SciChartSurface.RenderableSeries>
-                        <s:FastLineRenderableSeries DataSeries="{Binding DailyProfitSeries}" SeriesColor="DarkGreen" StrokeThickness="4"/>
+                        <s:FastLineRenderableSeries DataSeries="{Binding ProfitOverTime}" SeriesColor="DarkGreen" StrokeThickness="4"/>
                     </s:SciChartSurface.RenderableSeries>
 
                     <s:SciChartSurface.XAxis>
-                        <s:DateTimeAxis GrowBy="0.05, 0.05"/>
+                        <s:DateTimeAxis GrowBy="0.05, 0.05" VisibleRange="{Binding ProfitOverTimeVisibleRange}"/>
                     </s:SciChartSurface.XAxis>
 
                     <s:SciChartSurface.YAxis>
-                        <s:NumericAxis GrowBy="0.05, 0.05" DrawMajorBands="True"/>
+                        <s:NumericAxis GrowBy="0.05, 0.05" DrawMajorBands="True" AxisTitle="Profit (£)"/>
                     </s:SciChartSurface.YAxis>
 
                     <s:SciChartSurface.ChartModifier>
@@ -129,7 +129,7 @@
                     </s:SciChartSurface.XAxis>
 
                     <s:SciChartSurface.YAxis>
-                        <s:NumericAxis GrowBy="0.05, 0.05" DrawMajorBands="True"/>
+                        <s:NumericAxis GrowBy="0.05, 0.05" DrawMajorBands="True" AxisTitle="R-multiple"/>
                     </s:SciChartSurface.YAxis>
 
                     <s:SciChartSurface.ChartModifier>
@@ -156,7 +156,7 @@
             <Border Grid.Row="1" BorderBrush="DarkGray" BorderThickness="1" Margin="5" Padding="5">
                 <s:SciChartSurface  s:ThemeManager.Theme="Chrome" Margin="0" Padding="2">
                     <s:SciChartSurface.RenderableSeries>
-                        <s:FastColumnRenderableSeries DataSeries="{Binding ProfitPerMonthSeries}" SeriesColor="DarkRed" DataPointWidth="0.9"
+                        <s:FastColumnRenderableSeries DataSeries="{Binding ProfitPerMonthSeries}" SeriesColor="DarkRed" DataPointWidth="0.8"
                                                       StrokeThickness="0" Opacity="1.0">
                         </s:FastColumnRenderableSeries>
                     </s:SciChartSurface.RenderableSeries>
@@ -166,7 +166,7 @@
                     </s:SciChartSurface.XAxis>
 
                     <s:SciChartSurface.YAxis>
-                        <s:NumericAxis GrowBy="0.05, 0.05" DrawMajorBands="True" AxisTitle="Total profit for month"/>
+                        <s:NumericAxis GrowBy="0.05, 0.05" DrawMajorBands="True" AxisTitle="Month profit (£)"/>
                     </s:SciChartSurface.YAxis>
 
                     <s:SciChartSurface.ChartModifier>

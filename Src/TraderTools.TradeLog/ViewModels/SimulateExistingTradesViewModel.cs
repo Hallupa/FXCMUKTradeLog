@@ -394,7 +394,7 @@ namespace TraderTools.TradeLog.ViewModels
 
                             ret.OrderPrice = ret.OrderPrices[0].Price;
 
-                            var candle = _candlesService.GetFirstCandleThatClosesBeforeDateTime(ret.Market, Broker, Timeframe.H2, ret.OrderDateTime.Value);
+                            var candle = _candlesService.GetLastClosedCandle(ret.Market, Broker, Timeframe.H2, ret.OrderDateTime.Value);
                             if (ret.TradeDirection == TradeDirection.Long)
                             {
                                 ret.OrderType = ret.OrderPrice.Value <= (decimal)candle.Value.CloseAsk

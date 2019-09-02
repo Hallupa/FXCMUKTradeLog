@@ -28,7 +28,8 @@ namespace TraderTools.TradeLog.ViewModels
         Summary,
         Trades,
         Results,
-        SimulateTrades
+        SimulateTrades,
+        QueryTrades
     }
 
     public class MainWindowsViewModel : TradeViewModelBase, INotifyPropertyChanged
@@ -52,7 +53,6 @@ namespace TraderTools.TradeLog.ViewModels
         private string _updateAccountButtonText = "Update account";
         private bool _updatingAccount;
         private BrokerAccount _account;
-        private IDisposable _accountUpdatedObserver;
         private DispatcherTimer _saveTimer;
         private PageToShow _page = PageToShow.Summary;
         private bool _editingTrade;
@@ -76,16 +76,9 @@ namespace TraderTools.TradeLog.ViewModels
                     {
                         SaveTrades();
 
-                        if (_refreshUIOnSave)
+                        if (_refreshUIOnSave && !_updatingAccount)
                         {
-                            ResultsViewModel.UpdateResults();
-                            SummaryViewModel.Update(Trades.ToList());
-                            SimulateTradesViewModel.Update(Trades.ToList());
-
-                            if (TradeShowingOnChart != null)
-                            {
-                                ShowTrade(TradeShowingOnChart);
-                            }
+                            RefreshUI(false);
 
                             _refreshUIOnSave = false;
                         }
@@ -104,7 +97,8 @@ namespace TraderTools.TradeLog.ViewModels
                                       | TradeListDisplayOptionsFlag.Strategies
                                       | TradeListDisplayOptionsFlag.Status
                                       | TradeListDisplayOptionsFlag.Risk
-                                      | TradeListDisplayOptionsFlag.Rollover;
+                                      | TradeListDisplayOptionsFlag.Rollover
+                                      | TradeListDisplayOptionsFlag.Timeframe;
 
             _loginOutButtonText = "Login";
             _dispatcher = Dispatcher.CurrentDispatcher;
@@ -121,11 +115,6 @@ namespace TraderTools.TradeLog.ViewModels
             _brokersService.LoadBrokerAccounts(_tradeAutoCalculatorService, _dataDirectoryService);
 
             _account = BrokersService.AccountsLookup[Broker];
-            _accountUpdatedObserver = _account.AccountUpdatedObservable.Subscribe(d =>
-                {
-                    _dispatcher.Invoke(RefreshUI);
-                });
-
             _createLoginViewFunc = createLoginViewFunc;
             _createProgressingViewFunc = createProgressingViewFunc;
 
@@ -145,6 +134,11 @@ namespace TraderTools.TradeLog.ViewModels
 
                 Task.Run(() =>
                 {
+                    if (SelectedTrade.Timeframe != null && LargeChartTimeframeOptions.Contains(SelectedTrade.Timeframe.Value))
+                    {
+                        LargeChartTimeframe = SelectedTrade.Timeframe.Value;
+                    }
+
                     ViewTrade(SelectedTrade, _fxcm.Status == ConnectStatus.Connected);
 
                     _dispatcher.Invoke(() =>
@@ -159,10 +153,9 @@ namespace TraderTools.TradeLog.ViewModels
             });
             ViewTradeSetupCommand = new DelegateCommand(o =>
             {
-                if (_fxcm.Status != ConnectStatus.Connected)
+                if (SelectedTrade.Timeframe != null && LargeChartTimeframeOptions.Contains(SelectedTrade.Timeframe.Value))
                 {
-                    MessageBox.Show("Login to get price data", "Login to FXCM", MessageBoxButton.OK);
-                    return;
+                    LargeChartTimeframe = SelectedTrade.Timeframe.Value;
                 }
 
                 var progressViewActions = _createProgressingViewFunc();
@@ -199,10 +192,11 @@ namespace TraderTools.TradeLog.ViewModels
 
             SummaryViewModel = new SummaryViewModel();
             SimulateTradesViewModel = new SimulateExistingTradesViewModel();
+            QueryTradesViewModel =new QueryTradesViewModel();
 
             Trades.CollectionChanged += TradesOnCollectionChanged;
 
-            RefreshUI();
+            RefreshUI(true);
 
             _chartingService.ChartLineChangedObservable.Subscribe(ChartLinesChanged);
         }
@@ -241,11 +235,11 @@ namespace TraderTools.TradeLog.ViewModels
                     TradeShowingOnChart.ChartLines.Add(line);
                 }
 
-                SaveData(false);
+                DelayedSaveAndUIRefresh(false);
             }
         }
 
-        private void SaveData(bool refreshUI)
+        private void DelayedSaveAndUIRefresh(bool refreshUI)
         {
             _refreshUIOnSave = _refreshUIOnSave || refreshUI;
             _saveTimer.Start();
@@ -256,6 +250,8 @@ namespace TraderTools.TradeLog.ViewModels
         public SummaryViewModel SummaryViewModel { get; }
 
         public SimulateExistingTradesViewModel SimulateTradesViewModel { get; }
+
+        public QueryTradesViewModel QueryTradesViewModel { get; }
 
         public bool UpdateAccountEnabled => !_updatingAccount;
 
@@ -321,11 +317,11 @@ namespace TraderTools.TradeLog.ViewModels
                     UpdateAccountCommand.RaiseCanExecuteChanged();
                     Log.Info("Trades updated");
                     SaveTrades();
-
-                    SummaryViewModel.Update(Trades.ToList());
-                    SimulateTradesViewModel.Update(Trades.ToList());
+                    RefreshUI(true);
 
                     progressViewActions.close();
+
+                    UpdateLoginButtonText();
                 });
             });
 
@@ -371,23 +367,33 @@ namespace TraderTools.TradeLog.ViewModels
 
         private void TradeOnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            SaveData(true);
+            if (_updatingAccount) return;
+
+            DelayedSaveAndUIRefresh(true);
         }
 
-        private void RefreshUI()
+        private void RefreshUI(bool recreateTrades = false)
         {
-            Trades.Clear();
-
-            foreach (var trade in _account.Trades
-                .Where(x => x.OrderDateTime != null || x.EntryDateTime != null)
-                .OrderByDescending(x => int.Parse(x.Id)))
+            if (recreateTrades)
             {
-                Trades.Add(trade);
+                Trades.Clear();
+
+                foreach (var trade in _account.Trades
+                    .Where(x => x.OrderDateTime != null || x.EntryDateTime != null)
+                    .OrderByDescending(x => int.Parse(x.Id)))
+                {
+                    Trades.Add(trade);
+                }
             }
 
             ResultsViewModel.UpdateResults();
             SummaryViewModel.Update(Trades.ToList());
             SimulateTradesViewModel.Update(Trades.ToList());
+
+            if (TradeShowingOnChart != null && Trades.Contains(TradeShowingOnChart))
+            {
+                ShowTrade(TradeShowingOnChart);
+            }
         }
 
         private void LoginOut()
@@ -452,13 +458,22 @@ namespace TraderTools.TradeLog.ViewModels
                     {
                         progressViewActions.close();
                         LoginOutButtonEnabled = true;
-                        LoginOutButtonText = "Login";
+                        UpdateLoginButtonText();
                     });
                 });
             }
 
             LoginOutButtonEnabled = true;
 
+            UpdateLoginButtonText();
+            if (_fxcm.Status != ConnectStatus.Connected && loginAttempted)
+            {
+                MessageBox.Show("Unable to login", "Failed", MessageBoxButton.OK);
+            }
+        }
+
+        private void UpdateLoginButtonText()
+        {
             if (_fxcm.Status == ConnectStatus.Connected)
             {
                 LoginOutButtonText = "Logout";
@@ -466,11 +481,6 @@ namespace TraderTools.TradeLog.ViewModels
             else
             {
                 LoginOutButtonText = "Login";
-
-                if (loginAttempted)
-                {
-                    MessageBox.Show("Unable to login", "Failed", MessageBoxButton.OK);
-                }
             }
         }
 
