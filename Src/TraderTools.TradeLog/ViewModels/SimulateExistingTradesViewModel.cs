@@ -83,7 +83,7 @@ namespace TraderTools.TradeLog.ViewModels
         [Import] private IBrokersCandlesService _candlesService;
         [Import] private ITradeDetailsAutoCalculatorService _tradeCalculatorService;
         [Import] private IMarketDetailsService _marketDetailsService;
-        [Import] private BrokersService _brokersService;
+        [Import] private IBrokersService _brokersService;
         private List<Trade> _originalTrades = new List<Trade>();
         private decimal? _totalSimR;
         private decimal? _totalOriginalR;

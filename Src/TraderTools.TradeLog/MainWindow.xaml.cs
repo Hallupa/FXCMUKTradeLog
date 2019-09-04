@@ -8,6 +8,7 @@ using System.Windows.Threading;
 using Hallupa.Library;
 using log4net;
 using Octokit;
+using TraderTools.Basics;
 using TraderTools.Core.Services;
 using TraderTools.TradeLog.ViewModels;
 using TraderTools.TradeLog.Views;
@@ -22,7 +23,7 @@ namespace TraderTools.TradeLog
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         [Import]
-        private BrokersService _brokersService;
+        private IBrokersService _brokersService;
 
         private MainWindowsViewModel _vm;
 
@@ -40,7 +41,8 @@ namespace TraderTools.TradeLog
             Logger.Visibility = Visibility.Collapsed;
 #endif
 
-            Func<(Action<string> show, Action close)> createProgressingViewFunc = () =>
+            var dispatcher = Dispatcher.CurrentDispatcher;
+            Func<(Action<string> show, Action<string> updateText, Action close)> createProgressingViewFunc = () =>
             {
                 var view = new ProgressView();
                 view.Owner = this;
@@ -49,6 +51,10 @@ namespace TraderTools.TradeLog
                     {
                         view.TextToShow.Text = text;
                         view.ShowDialog();
+                    },
+                    txt =>
+                    {
+                        dispatcher.BeginInvoke((Action)(() => { view.TextToShow.Text = txt; }));
                     },
                     () => view.Close());
             };
@@ -132,7 +138,11 @@ namespace TraderTools.TradeLog
         private void OnClosing(object sender, CancelEventArgs cancelEventArgs)
         {
             _vm.SaveTrades();
-            _brokersService.Dispose();
+
+            if (_brokersService is IDisposable dis)
+            {
+                dis.Dispose();
+            }
         }
     }
 }

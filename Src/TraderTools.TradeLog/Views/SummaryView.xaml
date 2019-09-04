@@ -190,6 +190,9 @@
 
             <Label HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" Content="Profit (All trades)" Margin="20,3,3,3" />
             <TextBox IsReadOnly="True" Text="{Binding OverallProfit, StringFormat={}£{0:0.00}}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="3" Padding="4" />
+
+            <Label HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" Content="Sum of deposits/withdrawals" Margin="20,3,3,3" />
+            <TextBox IsReadOnly="True" Text="{Binding SumDepositsWithdrawals, StringFormat={}£{0:0.00}}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="3" Padding="4" />
         </StackPanel>
     </Grid>
 </UserControl>

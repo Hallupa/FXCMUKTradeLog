@@ -2,29 +2,30 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Abt.Controls.SciChart;
 using Abt.Controls.SciChart.Model.DataSeries;
 using Hallupa.Library;
+using log4net;
 using TraderTools.Basics;
 using TraderTools.Basics.Extensions;
-using TraderTools.Basics.Helpers;
-using TraderTools.Core.Services;
 using TraderTools.Core.UI;
 
 namespace TraderTools.TradeLog.ViewModels
 {
     public class SummaryViewModel : INotifyPropertyChanged
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private decimal _profitFromOpenTrades;
         private decimal _overallProfit;
         [Import] private IBrokersCandlesService _candlesService;
-        [Import] private BrokersService _brokersService;
+        [Import] private IBrokersService _brokersService;
         [Import] private IMarketDetailsService _marketDetailsService;
         private IBroker _broker;
         private DateRange _profitOverTimeVisibleRange;
+        private decimal _sumDepositsWithdrawals;
 
         public SummaryViewModel()
         {
@@ -61,6 +62,16 @@ namespace TraderTools.TradeLog.ViewModels
             set
             {
                 _profitFromOpenTrades = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public decimal SumDepositsWithdrawals
+        {
+            get => _sumDepositsWithdrawals;
+            set
+            {
+                _sumDepositsWithdrawals = value;
                 OnPropertyChanged();
             }
         }
@@ -137,6 +148,9 @@ namespace TraderTools.TradeLog.ViewModels
                     .Sum(x => x.Profit.Value);
 
             OverallProfit = trades.Where(x => x.Profit != null).Sum(x => x.Profit.Value);
+
+            var account = _brokersService.AccountsLookup[_broker];
+            SumDepositsWithdrawals = account.DepositsWithdrawals.Sum(d => d.Amount - d.Commission);
         }
 
         private void UpdateMonthlyProfitSeries(List<Trade> trades)
@@ -160,7 +174,9 @@ namespace TraderTools.TradeLog.ViewModels
                 {
                     if (trade.EntryDateTime <= monthDateEnd && (trade.CloseDateTime == null || trade.CloseDateTime >= monthDateStart))
                     {
-                        var tradeProfit = GetTradeProfit(trade, monthDateEnd, Timeframe.D1) - GetTradeProfit(trade, monthDateStart, Timeframe.D1);
+                        var marketDetails = _marketDetailsService.GetMarketDetails(_broker.Name, trade.Market);
+                        var tradeProfit = trade.GetTradeProfit(monthDateEnd, Timeframe.D1, _candlesService, marketDetails, _broker, false)
+                                          - trade.GetTradeProfit(monthDateStart, Timeframe.D1, _candlesService, marketDetails, _broker, false);
                         profit += tradeProfit;
                     }
                 }
@@ -180,15 +196,17 @@ namespace TraderTools.TradeLog.ViewModels
             var earliestTradeDate = orderedTradesWithEntry[0].EntryDateTime.Value;
             var earliestDate = new DateTime(earliestTradeDate.Year, earliestTradeDate.Month, earliestTradeDate.Day, 23, 59, 59, DateTimeKind.Utc);
             var latestDate = new DateTime(nowUTC.Year, nowUTC.Month, nowUTC.Day, 23, 59, 59, DateTimeKind.Utc);
+            var timeframe = Timeframe.D1;
 
-            for (var periodDateEnd = earliestDate; periodDateEnd <= latestDate; periodDateEnd = periodDateEnd.AddHours(4))
+            for (var periodDateEnd = earliestDate; periodDateEnd <= latestDate; periodDateEnd = periodDateEnd.AddSeconds((int)timeframe))
             {
                 var profit = 0M;
                 foreach (var trade in orderedTradesWithEntry)
                 {
                     if (trade.EntryDateTime <= periodDateEnd)
                     {
-                        var tradeProfit = GetTradeProfit(trade, periodDateEnd, Timeframe.H4);
+                        var marketDetails = _marketDetailsService.GetMarketDetails(_broker.Name, trade.Market);
+                        var tradeProfit = trade.GetTradeProfit(periodDateEnd, timeframe, _candlesService, marketDetails, _broker, false);
                         profit += tradeProfit;
                     }
                 }
@@ -197,46 +215,6 @@ namespace TraderTools.TradeLog.ViewModels
             }
 
             ProfitOverTimeVisibleRange = new DateRange(latestDate.AddMonths(-3), latestDate);
-        }
-
-        private decimal GetTradeProfit(Trade trade, DateTime dateTimeUTC, Timeframe candlesTimeframe)
-        {
-            if (trade.EntryPrice == null || trade.EntryDateTime == null)
-            {
-                return 0M;
-            }
-
-            if (trade.CloseDateTime != null && trade.CloseDateTime.Value <= dateTimeUTC)
-            {
-                return trade.Profit ?? 0M;
-            }
-
-            if (trade.EntryDateTime >= dateTimeUTC)
-            {
-                return 0M;
-            }
-
-            var latestCandle = _candlesService.GetLastClosedCandle(trade.Market, _broker, candlesTimeframe, dateTimeUTC, _broker.Status == ConnectStatus.Connected);
-
-            if (latestCandle != null && trade.PricePerPip != null)
-            {
-                var marketDetails = _marketDetailsService.GetMarketDetails(_broker.Name, trade.Market);
-                var closePriceToUse = trade.TradeDirection == TradeDirection.Long
-                    ? (decimal)latestCandle.Value.CloseBid
-                    : (decimal)latestCandle.Value.CloseAsk;
-                var profitPips = PipsHelper.GetPriceInPips(trade.TradeDirection == TradeDirection.Long ? closePriceToUse - trade.EntryPrice.Value : trade.EntryPrice.Value - closePriceToUse, marketDetails);
-                var totalRunningTime = (DateTime.UtcNow - trade.EntryDateTime.Value).TotalDays;
-                var runningTime = (trade.EntryDateTime.Value - dateTimeUTC).TotalDays;
-
-                var tradeProfit = trade.PricePerPip.Value * profitPips +
-                                  (!totalRunningTime.Equals(0.0) && trade.Rollover != null
-                                      ? trade.Rollover.Value * (decimal)(runningTime / totalRunningTime)
-                                      : 0M);
-
-                return tradeProfit;
-            }
-
-            return 0M;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

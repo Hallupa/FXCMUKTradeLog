@@ -10,8 +10,6 @@ using System.Text.RegularExpressions;
 using Hallupa.Library;
 using log4net;
 using TraderTools.Basics;
-using TraderTools.Core.Broker;
-using TraderTools.Core.Services;
 
 namespace TraderTools.TradeLog.ViewModels
 {
@@ -22,12 +20,12 @@ namespace TraderTools.TradeLog.ViewModels
         public event PropertyChangedEventHandler PropertyChanged;
         private static int _classNumber = 1;
         private IBroker _broker;
-        private BrokerAccount _account;
+        private IBrokerAccount _account;
         private Action<string> _setCode;
         private Func<string> _getCode;
         private string _code;
 
-        [Import] private BrokersService _brokersService;
+        [Import] private IBrokersService _brokersService;
 
         public QueryTradesViewModel()
         {

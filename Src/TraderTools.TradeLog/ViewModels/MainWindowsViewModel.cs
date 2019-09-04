@@ -6,6 +6,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -15,8 +16,6 @@ using Hallupa.Library;
 using log4net;
 using TraderTools.Basics;
 using TraderTools.Brokers.FXCM;
-using TraderTools.Core.Broker;
-using TraderTools.Core.Services;
 using TraderTools.Core.UI.Services;
 using TraderTools.Core.UI.ViewModels;
 using TraderTools.Core.UI.Views;
@@ -37,22 +36,22 @@ namespace TraderTools.TradeLog.ViewModels
         #region Fields
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private readonly Action<Action<string, string>> _createLoginViewFunc;
-        private readonly Func<(Action<string> show, Action close)> _createProgressingViewFunc;
+        private readonly Func<(Action<string> show, Action<string> updateText, Action close)> _createProgressingViewFunc;
         private FxcmBroker _fxcm;
 
-        [Import] private BrokersService _brokersService;
+        [Import] private IBrokersService _brokersService;
         [Import] private IBrokersCandlesService _candlesService;
         [Import] private ChartingService _chartingService;
         [Import] private IMarketDetailsService _marketsService;
         [Import] private ITradeDetailsAutoCalculatorService _tradeAutoCalculatorService;
-        [Import] private DataDirectoryService _dataDirectoryService;
+        [Import] private IDataDirectoryService _dataDirectoryService;
         private string _loginOutButtonText;
         private bool _loginOutButtonEnabled = true;
         private Dispatcher _dispatcher;
         private bool _updateAccountEnabled = true;
         private string _updateAccountButtonText = "Update account";
         private bool _updatingAccount;
-        private BrokerAccount _account;
+        private IBrokerAccount _account;
         private DispatcherTimer _saveTimer;
         private PageToShow _page = PageToShow.Summary;
         private bool _editingTrade;
@@ -61,7 +60,7 @@ namespace TraderTools.TradeLog.ViewModels
 
         #endregion
 
-        public MainWindowsViewModel(Action<Action<string, string>> createLoginViewFunc, Func<(Action<string> show, Action close)> createProgressingViewFunc)
+        public MainWindowsViewModel(Action<Action<string, string>> createLoginViewFunc, Func<(Action<string> show, Action<string> updateText, Action close)> createProgressingViewFunc)
         {
             Log.Info("Application started");
 
@@ -266,7 +265,7 @@ namespace TraderTools.TradeLog.ViewModels
         }
 
         public DelegateCommand UpdateAccountCommand { get; }
-        [Import] public BrokersService BrokersService { get; private set; }
+        [Import] public IBrokersService BrokersService { get; private set; }
         [Import] public IBrokersCandlesService BrokerCandleService { get; private set; }
 
         public string LoginOutButtonText
@@ -308,7 +307,7 @@ namespace TraderTools.TradeLog.ViewModels
             Task.Run(() =>
             {
                 Log.Info("Updating trades");
-                _account.UpdateBrokerAccount(Broker, BrokerCandleService, _marketsService, _tradeAutoCalculatorService, BrokerAccount.UpdateOption.ForceUpdate);
+                _account.UpdateBrokerAccount(Broker, BrokerCandleService, _marketsService, _tradeAutoCalculatorService, str => progressViewActions.updateText(str), UpdateOption.ForceUpdate);
 
                 _dispatcher.Invoke(() =>
                 {
@@ -317,6 +316,42 @@ namespace TraderTools.TradeLog.ViewModels
                     UpdateAccountCommand.RaiseCanExecuteChanged();
                     Log.Info("Trades updated");
                     SaveTrades();
+
+                    progressViewActions.updateText("Updating day candles...");
+                    var completed = 0;
+                    var total = 0;
+
+                    // Update candles
+                    var updateCandles = new ProducerConsumer<string>(
+                        6,
+                        m =>
+                        {
+                            try
+                            {
+                                _candlesService.UpdateCandles(_brokersService.GetBroker("FXCM"), m, Timeframe.D1);
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error($"Unable to update market: {m}", ex);
+                            }
+
+                            Interlocked.Increment(ref completed);
+
+                            progressViewActions.updateText($"Updated day candles for {completed} of {total} markets");
+
+                            return ProducerConsumerActionResult.Success;
+                        });
+
+                    foreach (var market in _marketsService.GetAllMarketDetails())
+                    {
+                        total++;
+                        updateCandles.Add(market.Name);
+                    }
+
+                    updateCandles.SetProducerCompleted();
+                    updateCandles.Start();
+                    updateCandles.WaitUntilConsumersFinished();
+
                     RefreshUI(true);
 
                     progressViewActions.close();
