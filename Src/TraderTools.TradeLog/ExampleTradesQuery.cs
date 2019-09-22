@@ -22,7 +22,7 @@ namespace TradeQuery
                 where trade.EntryDateTime != null && (trade.CloseDateTime == null || trade.CloseDateTime >= new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, DateTimeKind.Utc))
                 let profitLatestDay = trade.ProfitLatestDay
                 orderby trade.ProfitLatestDay
-                select new { Id = trade.Id, trade.Market, ProfitLatestDay = trade.ProfitLatestDay.ToString("£0.00"), Status = trade.Status };
+                select new { Id = trade.Id, trade.Market, ProfitLatestDay = trade.ProfitLatestDay.ToString("£0.00"), Status = trade.Status, trade.Strategies };
         }
 
         private object ShowProfitsForEachStrategy(List<Trade> trades)
