@@ -307,7 +307,7 @@ namespace TraderTools.TradeLog.ViewModels
                     var timeframesAllCandles = SimulationRunner.PopulateCandles(Broker, d.Market.Name, true, timeframes.ToArray(), timeframeIndicatorsRequired,
                         _candlesService, out var m1Candles,  true);
 
-                    runner.SimulateTrades(
+                    /*runner.SimulateTrades(
                         d.Market, d.Orders.Cast<Trade>().ToList(), openTrades, closedTrades,
                         timeframes.ToList(), m1Candles, timeframesAllCandles,
                         UpdateOpenTradesAction);
@@ -337,7 +337,7 @@ namespace TraderTools.TradeLog.ViewModels
                         TotalOpenTrades = Trades.Count(t => t.CloseDateTime == null);
                         TotalTrades = Trades.Count;
                         ResultsViewModel.UpdateResults();
-                    });
+                    });*/
 
                     return ProducerConsumerActionResult.Success;
                 });

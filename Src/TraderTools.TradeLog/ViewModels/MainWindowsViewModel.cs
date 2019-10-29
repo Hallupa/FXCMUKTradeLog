@@ -97,7 +97,9 @@ namespace TraderTools.TradeLog.ViewModels
                                       | TradeListDisplayOptionsFlag.Status
                                       | TradeListDisplayOptionsFlag.Risk
                                       | TradeListDisplayOptionsFlag.Rollover
-                                      | TradeListDisplayOptionsFlag.Timeframe;
+                                      | TradeListDisplayOptionsFlag.Timeframe
+                                      | TradeListDisplayOptionsFlag.Dates
+                                      | TradeListDisplayOptionsFlag.Profit;
 
             _loginOutButtonText = "Login";
             _dispatcher = Dispatcher.CurrentDispatcher;
