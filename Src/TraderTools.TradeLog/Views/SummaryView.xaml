@@ -39,7 +39,7 @@
                     </s:SciChartSurface.RenderableSeries>
 
                     <s:SciChartSurface.XAxis>
-                        <s:DateTimeAxis GrowBy="0.05, 0.05"/>
+                        <s:DateTimeAxis GrowBy="0.05, 0.05" VisibleRange="{Binding VisibleRange}"/>
                     </s:SciChartSurface.XAxis>
 
                     <s:SciChartSurface.YAxis>
@@ -78,7 +78,7 @@
                     </s:SciChartSurface.RenderableSeries>
 
                     <s:SciChartSurface.XAxis>
-                        <s:DateTimeAxis GrowBy="0.05, 0.05" VisibleRange="{Binding ProfitOverTimeVisibleRange}"/>
+                        <s:DateTimeAxis GrowBy="0.05, 0.05" VisibleRange="{Binding VisibleRange}"/>
                     </s:SciChartSurface.XAxis>
 
                     <s:SciChartSurface.YAxis>
@@ -125,7 +125,7 @@
                     </s:SciChartSurface.RenderableSeries>
 
                     <s:SciChartSurface.XAxis>
-                        <s:DateTimeAxis GrowBy="0.05, 0.05"/>
+                        <s:DateTimeAxis GrowBy="0.05, 0.05" VisibleRange="{Binding VisibleRange}"/>
                     </s:SciChartSurface.XAxis>
 
                     <s:SciChartSurface.YAxis>
@@ -162,7 +162,7 @@
                     </s:SciChartSurface.RenderableSeries>
 
                     <s:SciChartSurface.XAxis>
-                        <s:DateTimeAxis GrowBy="0.05, 0.05"/>
+                        <s:DateTimeAxis GrowBy="0.05, 0.05" VisibleRange="{Binding MonthlyProfitVisibleRange}"/>
                     </s:SciChartSurface.XAxis>
 
                     <s:SciChartSurface.YAxis>

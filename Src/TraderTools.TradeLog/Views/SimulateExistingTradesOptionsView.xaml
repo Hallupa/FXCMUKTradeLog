@@ -54,6 +54,9 @@
         <Label Grid.Row="6" Content="Limit placement"/>
         <StackPanel Grid.Row="7" Grid.ColumnSpan="3">
             <RadioButton Content="Original trade's limit including changes" IsChecked="{Binding LimitOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:LimitOption.Original}, Mode=TwoWay}"/>
+            <RadioButton Content="Fixed 1R limit" IsChecked="{Binding LimitOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:LimitOption.Fixed1RLimit}, Mode=TwoWay}"/>
+            <RadioButton Content="Fixed 1.5R limit" IsChecked="{Binding LimitOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:LimitOption.Fixed1Point5RLimit}, Mode=TwoWay}"/>
+            <RadioButton Content="Fixed 2R limit" IsChecked="{Binding LimitOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:LimitOption.Fixed2RLimit}, Mode=TwoWay}"/>
             <RadioButton Content="Fixed 3R limit" IsChecked="{Binding LimitOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:LimitOption.Fixed3RLimit}, Mode=TwoWay}"/>
             <RadioButton Content="No limit" IsChecked="{Binding LimitOption, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static viewModels:LimitOption.None}, Mode=TwoWay}"/>
         </StackPanel>

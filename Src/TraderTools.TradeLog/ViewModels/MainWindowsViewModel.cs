@@ -460,12 +460,16 @@ namespace TraderTools.TradeLog.ViewModels
 
                             if (_fxcm.Status == ConnectStatus.Connected)
                             {
-                                foreach (var marketDetails in _fxcm.GetMarketDetailsList())
+                                var marketDetailsList = _fxcm.GetMarketDetailsList();
+                                if (marketDetailsList != null)
                                 {
-                                    _marketsService.AddMarketDetails(marketDetails);
-                                }
+                                    foreach (var marketDetails in marketDetailsList)
+                                    {
+                                        _marketsService.AddMarketDetails(marketDetails);
+                                    }
 
-                                _marketsService.SaveMarketDetailsList();
+                                    _marketsService.SaveMarketDetailsList();
+                                }
                             }
                         }
                         catch (Exception ex)

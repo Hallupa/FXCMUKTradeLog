@@ -163,6 +163,7 @@
     <Compile Include="ViewModels\MainWindowsViewModel.cs" />
     <Compile Include="ViewModels\QueryTradesViewModel.cs" />
     <Compile Include="ViewModels\SimulateExistingTradesOptionsViewModel.cs" />
+    <Compile Include="ViewModels\SimulateExistingTradesStrategy.cs" />
     <Compile Include="ViewModels\SimulateExistingTradesViewModel.cs" />
     <Compile Include="ViewModels\SummaryViewModel.cs" />
     <Compile Include="Views\InfoView.xaml.cs">

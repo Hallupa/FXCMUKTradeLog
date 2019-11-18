@@ -24,14 +24,18 @@ namespace TraderTools.TradeLog.ViewModels
         [Import] private IBrokersService _brokersService;
         [Import] private IMarketDetailsService _marketDetailsService;
         private IBroker _broker;
-        private DateRange _profitOverTimeVisibleRange;
         private decimal _sumDepositsWithdrawals;
+        private DateRange _visibleRange;
+        private DateRange _monthlyProfitVisibleRange;
 
         public SummaryViewModel()
         {
             DependencyContainer.ComposeParts(this);
             _broker = _brokersService.Brokers.First(b => b.Name == "FXCM");
-            ProfitOverTimeVisibleRange = new DateRange();
+            var nowUTC = DateTime.UtcNow;
+            var latestDate = new DateTime(nowUTC.Year, nowUTC.Month, nowUTC.Day, 23, 59, 59, DateTimeKind.Utc);
+            VisibleRange = new DateRange(latestDate.AddMonths(-3), latestDate);
+            MonthlyProfitVisibleRange = new DateRange(latestDate.AddMonths(-12), latestDate);
         }
 
         public ChartViewModel ChartViewModel { get; } = new ChartViewModel();
@@ -46,12 +50,22 @@ namespace TraderTools.TradeLog.ViewModels
 
         public XyDataSeries<DateTime, double> RMultiplePerCompletedTradeDataTrendLine { get; } = new XyDataSeries<DateTime, double>();
 
-        public DateRange ProfitOverTimeVisibleRange
+        public DateRange VisibleRange
         {
-            get => _profitOverTimeVisibleRange;
+            get => _visibleRange;
             set
             {
-                _profitOverTimeVisibleRange = value;
+                _visibleRange = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public DateRange MonthlyProfitVisibleRange
+        {
+            get => _monthlyProfitVisibleRange;
+            set
+            {
+                _monthlyProfitVisibleRange = value;
                 OnPropertyChanged();
             }
         }
@@ -109,7 +123,29 @@ namespace TraderTools.TradeLog.ViewModels
                 }
             }
 
+            UpdateRMultiplePerCompletedTrade(orderedTrades, now);
+
+            // Calculate overall profit
+            UpdateProfitOverTimeSeries(trades);
+
+            // Calculate monthly profits
+            UpdateMonthlyProfitSeries(trades);
+
+            ProfitFromOpenTrades = trades
+                    .Where(x => x.EntryDateTime != null && x.CloseDateTime == null && x.Profit != null)
+                    .Sum(x => x.Profit.Value);
+
+            OverallProfit = trades.Where(x => x.Profit != null).Sum(x => x.Profit.Value);
+
+            var account = _brokersService.AccountsLookup[_broker];
+            SumDepositsWithdrawals = account.DepositsWithdrawals.Sum(d => d.Amount - d.Commission);
+        }
+
+        private void UpdateRMultiplePerCompletedTrade(List<Trade> orderedTrades, DateTime now)
+        {
             // Calculate monthly averages for R-Multiples
+            var nowUTC = DateTime.UtcNow;
+            var latestDate = new DateTime(nowUTC.Year, nowUTC.Month, nowUTC.Day, 23, 59, 59, DateTimeKind.Utc);
             RMultiplePerCompletedTradeDataTrendLine.Clear();
             if (orderedTrades.Count > 2)
             {
@@ -130,27 +166,13 @@ namespace TraderTools.TradeLog.ViewModels
                             pointDate = latest;
                         }
 
-                        RMultiplePerCompletedTradeDataTrendLine.Append(pointDate, monthTrades.Where(x => x.RMultiple != null).Average(x => (double)x.RMultiple.Value));
+                        RMultiplePerCompletedTradeDataTrendLine.Append(pointDate,
+                            monthTrades.Where(x => x.RMultiple != null).Average(x => (double) x.RMultiple.Value));
                     }
 
                     date = date.AddMonths(1);
                 }
             }
-
-            // Calculate overall profit
-            UpdateProfitOverTimeSeries(trades);
-
-            // Calculate monthly profits
-            UpdateMonthlyProfitSeries(trades);
-
-            ProfitFromOpenTrades = trades
-                    .Where(x => x.EntryDateTime != null && x.CloseDateTime == null && x.Profit != null)
-                    .Sum(x => x.Profit.Value);
-
-            OverallProfit = trades.Where(x => x.Profit != null).Sum(x => x.Profit.Value);
-
-            var account = _brokersService.AccountsLookup[_broker];
-            SumDepositsWithdrawals = account.DepositsWithdrawals.Sum(d => d.Amount - d.Commission);
         }
 
         private void UpdateMonthlyProfitSeries(List<Trade> trades)
@@ -213,8 +235,6 @@ namespace TraderTools.TradeLog.ViewModels
 
                 ProfitOverTime.Append(periodDateEnd, (double)profit);
             }
-
-            ProfitOverTimeVisibleRange = new DateRange(latestDate.AddMonths(-3), latestDate);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

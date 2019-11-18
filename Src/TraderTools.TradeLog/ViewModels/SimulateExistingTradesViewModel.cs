@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Reflection;
@@ -9,21 +8,36 @@ using System.Windows;
 using Hallupa.Library;
 using log4net;
 using TraderTools.Basics;
-using TraderTools.Basics.Extensions;
-using TraderTools.Core.Services;
 using TraderTools.Core.UI.ViewModels;
 using TraderTools.Simulation;
 using TraderTools.TradeLog.Views;
 
 namespace TraderTools.TradeLog.ViewModels
 {
+    public enum StopUpdateStrategy
+    {
+        StopTrailIndicator = 1,
+        DynamicTrailingStop = 2
+    }
+
     public class SimTrade : Trade
     {
+        public SimTrade(Trade originalTrade)
+        {
+            OriginalTrade = originalTrade;
+        }
+
+        public int OrderIndex = -1;
+        public int StopIndex = -1;
+        public int LimitIndex = -1;
+
         private decimal? _originalRMultiple;
         private decimal? _originalEntryPrice;
         private decimal? _originalClosePrice;
         private string _originalStatus;
         private decimal? _diffFromOriginalR;
+
+        public Trade OriginalTrade { get; private set; }
 
         public decimal? OriginalRMultiple
         {
@@ -273,46 +287,13 @@ namespace TraderTools.TradeLog.ViewModels
                     }
 
                     Log.Info($"Running simulation for {d.Market.Name} and {d.Orders.Count} trades");
-                    var openTrades = new List<Trade>();
-                    var closedTrades = new List<Trade>();
 
                     var runner = new SimulationRunner(_candlesService, _tradeCalculatorService, _marketDetailsService);
-                    var timeframes = new List<Timeframe> { Timeframe.H2, Timeframe.M15 };
-                    var timeframeIndicatorsRequired = new TimeframeLookup<Indicator[]>();
+                    var trades = runner.Run(new SimulateExistingTradesStrategy(d.Orders.ToList(), optionsView.ViewModel), d.Market, Broker, updatePrices: true);
 
-                    switch (options.StopOption)
-                    {
-                        case StopOption.InitialStopThenTrail2HR8EMA:
-                            timeframeIndicatorsRequired[Timeframe.H2] = new[] { Indicator.EMA8, Indicator.ATR };
-                            if (!timeframes.Contains(Timeframe.H2)) timeframes.Add(Timeframe.H2);
-                            break;
-                        case StopOption.InitialStopThenTrail4HR8EMA:
-                            timeframeIndicatorsRequired[Timeframe.H4] = new[] { Indicator.EMA8, Indicator.ATR };
-                            if (!timeframes.Contains(Timeframe.H4)) timeframes.Add(Timeframe.H4);
-                            break;
-                        case StopOption.InitialStopThenTrail2HR25EMA:
-                            timeframeIndicatorsRequired[Timeframe.H2] = new[] { Indicator.EMA25, Indicator.ATR };
-                            if (!timeframes.Contains(Timeframe.H2)) timeframes.Add(Timeframe.H2);
-                            break;
-                        case StopOption.InitialStopThenTrail4HR25EMA:
-                            timeframeIndicatorsRequired[Timeframe.H4] = new[] { Indicator.EMA25, Indicator.ATR };
-                            if (!timeframes.Contains(Timeframe.H4)) timeframes.Add(Timeframe.H4);
-                            break;
-                        case StopOption.DynamicTrailingStop:
-                            timeframeIndicatorsRequired[Timeframe.H2] = new[] { Indicator.EMA25 };
-                            if (!timeframes.Contains(Timeframe.H2)) timeframes.Add(Timeframe.H2);
-                            break;
-                    }
 
-                    var timeframesAllCandles = SimulationRunner.PopulateCandles(Broker, d.Market.Name, true, timeframes.ToArray(), timeframeIndicatorsRequired,
-                        _candlesService, out var m1Candles,  true);
 
-                    /*runner.SimulateTrades(
-                        d.Market, d.Orders.Cast<Trade>().ToList(), openTrades, closedTrades,
-                        timeframes.ToList(), m1Candles, timeframesAllCandles,
-                        UpdateOpenTradesAction);
-
-                    foreach (var t in d.Orders.Union(openTrades).Union(closedTrades))
+                    foreach (var t in trades)
                     {
                         _tradeCalculatorService.RecalculateTrade(t, CalculateOptions.IncludeOpenTradesInRMultipleCalculation);
                         allTrades.Add(t);
@@ -323,7 +304,7 @@ namespace TraderTools.TradeLog.ViewModels
 
                     _dispatcher.Invoke(() =>
                     {
-                        var newTrades = d.Orders.Union(openTrades).Union(closedTrades).ToList();
+                        var newTrades = trades;
                         foreach (var t in newTrades.Cast<SimTrade>())
                         {
                             t.DiffFromOriginalR = t.RMultiple != null && t.OriginalRMultiple != null
@@ -337,7 +318,7 @@ namespace TraderTools.TradeLog.ViewModels
                         TotalOpenTrades = Trades.Count(t => t.CloseDateTime == null);
                         TotalTrades = Trades.Count;
                         ResultsViewModel.UpdateResults();
-                    });*/
+                    });
 
                     return ProducerConsumerActionResult.Success;
                 });
@@ -354,150 +335,7 @@ namespace TraderTools.TradeLog.ViewModels
                     var market = _marketDetailsService.GetMarketDetails("FXCM", groupedTrades.Key);
                     totalMarketsForSimulation++;
 
-                    var orders = groupedTrades.Select(t =>
-                    {
-                        var ret = CopyOriginalTradeForSimulation(t);
-
-                        // For market entry trades, set the order price as the entry price
-                        if (ret.OrderPrice == null && ret.EntryDateTime != null)
-                        {
-                            ret.AddOrderPrice(ret.EntryDateTime.Value, ret.EntryPrice);
-                            ret.OrderPrice = ret.EntryPrice;
-                            ret.OrderDateTime = new DateTime(ret.EntryDateTime.Value.Ticks, DateTimeKind.Utc);
-                        }
-
-                        // Apply order adjustment
-                        var orderAdjustmentATRRatio = 0.0M;
-                        switch (options.OrderOption)
-                        {
-                            case OrderOption.OriginalOrderPoint1PercentBetter:
-                                orderAdjustmentATRRatio = 1.001M;
-                                break;
-                            case OrderOption.OriginalOrderPoint1PercentWorse:
-                                orderAdjustmentATRRatio = -1.001M;
-                                break;
-                            case OrderOption.OriginalOrderPoint2PercentBetter:
-                                orderAdjustmentATRRatio = 1.002M;
-                                break;
-                            case OrderOption.OriginalOrderPoint5PercentBetter:
-                                orderAdjustmentATRRatio = 1.005M;
-                                break;
-                        }
-
-                        if (orderAdjustmentATRRatio != 0.0M)
-                        {
-                            foreach (var order in ret.OrderPrices)
-                            {
-                                var newPrice = order.Price.Value * orderAdjustmentATRRatio;
-                                order.Price = newPrice;
-                            }
-
-                            ret.OrderPrice = ret.OrderPrices[0].Price;
-
-                            var candle = _candlesService.GetLastClosedCandle(ret.Market, Broker, Timeframe.H2, ret.OrderDateTime.Value);
-                            if (ret.TradeDirection == TradeDirection.Long)
-                            {
-                                ret.OrderType = ret.OrderPrice.Value <= (decimal)candle.Value.CloseAsk
-                                    ? OrderType.LimitEntry
-                                    : OrderType.StopEntry;
-                            }
-                            else
-                            {
-                                ret.OrderType = ret.OrderPrice.Value <= (decimal)candle.Value.CloseAsk
-                                    ? OrderType.StopEntry
-                                    : OrderType.LimitEntry;
-                            }
-                        }
-
-                        ret.EntryDateTime = null;
-                        ret.CloseDateTime = null;
-                        ret.NetProfitLoss = null;
-                        ret.EntryPrice = null;
-                        ret.OrderAmount = ret.OrderAmount ?? ret.EntryQuantity;
-                        ret.EntryQuantity = null;
-                        ret.ClosePrice = null;
-                        ret.CloseReason = null;
-                        ret.CloseDateTime = null;
-                        ret.RiskAmount = null;
-                        ret.EntryPrice = null;
-                        ret.NetProfitLoss = null;
-                        ret.GrossProfitLoss = null;
-                        ret.RMultiple = null;
-
-                        if (options.StopOption == StopOption.InitialStopOnly || options.StopOption == StopOption.InitialStopThenTrail2HR8EMA
-                                                                             || options.StopOption == StopOption.InitialStopThenTrail2HR25EMA
-                                                                             || options.StopOption == StopOption.InitialStopThenTrail4HR8EMA
-                                                                             || options.StopOption == StopOption.InitialStopThenTrail4HR25EMA
-                                                                             || options.StopOption == StopOption.DynamicTrailingStop)
-                        {
-                            // Single stop price
-                            if (ret.StopPrices.Count > 0)
-                            {
-                                for (var i = ret.StopPrices.Count - 1; i >= 1; i--)
-                                {
-                                    ret.StopPrices.RemoveAt(i);
-                                }
-                            }
-                        }
-
-                        switch (options.StopOption)
-                        {
-                            case StopOption.InitialStopThenTrail2HR8EMA:
-                            {
-                                ret.Custom1 = (int)StopUpdateStrategy.StopTrailIndicator;
-                                ret.Custom2 = (int)Timeframe.H2;
-                                ret.Custom3 = (int)Indicator.EMA8;
-                                break;
-                            }
-                            case StopOption.InitialStopThenTrail2HR25EMA:
-                            {
-                                ret.Custom1 = (int)StopUpdateStrategy.StopTrailIndicator;
-                                ret.Custom2 = (int)Timeframe.H2;
-                                ret.Custom3 = (int)Indicator.EMA25;
-                                break;
-                            }
-                            case StopOption.InitialStopThenTrail4HR8EMA:
-                            {
-                                ret.Custom1 = (int)StopUpdateStrategy.StopTrailIndicator;
-                                ret.Custom2 = (int)Timeframe.H4;
-                                ret.Custom3 = (int)Indicator.EMA8;
-                                break;
-                            }
-                            case StopOption.InitialStopThenTrail4HR25EMA:
-                            {
-                                ret.Custom1 = (int)StopUpdateStrategy.StopTrailIndicator;
-                                ret.Custom2 = (int)Timeframe.H4;
-                                ret.Custom3 = (int)Indicator.EMA25;
-                                break;
-                            }
-                            case StopOption.DynamicTrailingStop:
-                            {
-                                ret.Custom1 = (int)StopUpdateStrategy.DynamicTrailingStop;
-                                break;
-                            }
-                        }
-
-                        if (options.LimitOption == LimitOption.None)
-                        {
-                            // No limit
-                            ret.LimitPrices.Clear();
-                            ret.LimitPrice = null;
-                        }
-
-                        if (options.LimitOption == LimitOption.Fixed3RLimit)
-                        {
-                            if (ret.StopPrices.Count > 0 && ret.OrderPrice != null)
-                            {
-                                var limit = ret.OrderPrice.Value + ((ret.OrderPrice.Value - ret.StopPrices[0].Price.Value) * 3M);
-
-                                ret.LimitPrices.Clear();
-                                ret.AddLimitPrice(ret.StopPrices[0].Date, limit);
-                                ret.LimitPrice = limit;
-                            }
-                        }
-
-                        return ret;
-                    }).ToList();
+                    var orders = groupedTrades.Select(CopyBasicDetailsFromOriginalTradeForSimulation).ToList();
 
                     producerConsumer.Add((market, orders));
                 }
@@ -514,77 +352,35 @@ namespace TraderTools.TradeLog.ViewModels
                 });
             });
         }
-
-        private enum StopUpdateStrategy
-        {
-            StopTrailIndicator = 1,
-            DynamicTrailingStop = 2
-        }
-
-        private void UpdateOpenTradesAction(UpdateTradeParameters p)
-        {
-            if (p.Trade.Custom1 == (int)StopUpdateStrategy.StopTrailIndicator && p.Trade.Custom2 != null && p.Trade.Custom3 != null)
-            {
-                StopHelper.TrailIndicator(p.Trade, (Timeframe)p.Trade.Custom2.Value, (Indicator)p.Trade.Custom3.Value, p.TimeframeCurrentCandles, p.TimeTicks);
-            }
-            else if (p.Trade.Custom1 == (int)StopUpdateStrategy.DynamicTrailingStop)
-            {
-                StopHelper.TrailDynamicStop(p.Trade, p.TimeframeCurrentCandles, p.TimeTicks);
-            }
-        }
-
+        
         public void Update(List<Trade> trades)
         {
             _originalTrades = trades.Where(t => t.RMultiple != null).ToList();
         }
 
-        private static SimTrade CopyOriginalTradeForSimulation(Trade tradeFrom)
+        private static SimTrade CopyBasicDetailsFromOriginalTradeForSimulation(Trade tradeFrom)
         {
-            var tradeTo = new SimTrade();
+            var tradeTo = new SimTrade(tradeFrom);
             tradeTo.Id = tradeFrom.Id;
             tradeTo.Market = tradeFrom.Market;
-            tradeTo.EntryDateTime = tradeFrom.EntryDateTime;
-            tradeTo.StopPrices = tradeFrom.StopPrices.OrderBy(s => s.Date).ToList();
-            tradeTo.LimitPrices = tradeFrom.LimitPrices.OrderBy(s => s.Date).ToList();
+
 
             tradeTo.BaseAsset = tradeFrom.BaseAsset;
             tradeTo.Broker = tradeFrom.Broker;
-            tradeTo.CloseDateTime = tradeFrom.CloseDateTime;
-            tradeTo.ClosePrice = tradeFrom.ClosePrice;
+
             tradeTo.Comments = tradeFrom.Comments;
             tradeTo.CommissionAsset = tradeFrom.CommissionAsset;
             tradeTo.CommissionValue = tradeFrom.CommissionValue;
             tradeTo.Commission = tradeFrom.Commission;
-            tradeTo.CloseReason = tradeFrom.CloseReason;
-            tradeTo.OrderDateTime = tradeFrom.OrderDateTime;
-            tradeTo.RMultiple = tradeFrom.RMultiple;
-            tradeTo.EntryPrice = tradeFrom.EntryPrice;
-            tradeTo.GrossProfitLoss = tradeFrom.GrossProfitLoss;
+
             tradeTo.CommissionValueCurrency = tradeFrom.CommissionValueCurrency;
-            tradeTo.EntryQuantity = tradeFrom.EntryQuantity;
-            tradeTo.EntryValue = tradeFrom.EntryValue;
-            tradeTo.PricePerPip = tradeFrom.PricePerPip;
+
             tradeTo.Strategies = tradeFrom.Strategies;
-            tradeTo.InitialLimit = tradeFrom.InitialLimit;
-            tradeTo.LimitPrice = tradeFrom.LimitPrice;
-            tradeTo.InitialStopInPips = tradeFrom.InitialStopInPips;
-            tradeTo.OrderKind = tradeFrom.OrderKind;
-            tradeTo.OrderPrices = tradeFrom.OrderPrices.OrderBy(s => s.Date).ToList();
-            tradeTo.OrderPrice = tradeFrom.OrderPrice;
-            tradeTo.InitialStop = tradeFrom.InitialStop;
-            tradeTo.OrderType = tradeFrom.OrderType;
+
             tradeTo.TradeDirection = tradeFrom.TradeDirection;
             tradeTo.Timeframe = tradeFrom.Timeframe;
-            tradeTo.StopPrice = tradeFrom.StopPrice;
-            tradeTo.StopInPips = tradeFrom.StopInPips;
+
             tradeTo.Rollover = tradeFrom.Rollover;
-            tradeTo.RiskPercentOfBalance = tradeFrom.RiskPercentOfBalance;
-            tradeTo.RiskAmount = tradeFrom.RiskAmount;
-            tradeTo.OrderExpireTime = tradeFrom.OrderExpireTime;
-            tradeTo.OrderAmount = tradeFrom.OrderAmount;
-            tradeTo.NetProfitLoss = tradeFrom.NetProfitLoss;
-            tradeTo.LimitInPips = tradeFrom.LimitInPips;
-            tradeTo.InitialLimitInPips = tradeFrom.InitialLimitInPips;
 
             tradeTo.OriginalClosePrice = tradeFrom.ClosePrice;
             tradeTo.OriginalEntryPrice = tradeFrom.EntryPrice;

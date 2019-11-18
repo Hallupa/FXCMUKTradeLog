@@ -28,6 +28,9 @@ namespace TraderTools.TradeLog.ViewModels
     public enum LimitOption
     {
         Original,
+        Fixed1RLimit,
+        Fixed1Point5RLimit,
+        Fixed2RLimit,
         Fixed3RLimit,
         None
     }
