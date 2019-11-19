@@ -278,7 +278,7 @@ namespace TraderTools.TradeLog.ViewModels
                 var marketsCompleted = 0;
                 var totalMarketsForSimulation = 0;
 
-                var producerConsumer = new ProducerConsumer<(MarketDetails Market, List<SimTrade> Orders)>(3,
+                var producerConsumer = new ProducerConsumer<(MarketDetails Market, List<SimTrade> Orders)>(2,
                     d =>
                 {
                     if (_stopSimulation)
@@ -289,7 +289,7 @@ namespace TraderTools.TradeLog.ViewModels
                     Log.Info($"Running simulation for {d.Market.Name} and {d.Orders.Count} trades");
 
                     var runner = new SimulationRunner(_candlesService, _tradeCalculatorService, _marketDetailsService);
-                    var trades = runner.Run(new SimulateExistingTradesStrategy(d.Orders.ToList(), optionsView.ViewModel), d.Market, Broker, updatePrices: true);
+                    var trades = runner.Run(new SimulateExistingTradesStrategy(d.Orders.ToList(), optionsView.ViewModel), d.Market, Broker, updatePrices: true, cacheCandles: false);
 
 
 

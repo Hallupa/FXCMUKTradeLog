@@ -292,11 +292,6 @@ namespace TraderTools.TradeLog.ViewModels
                 {
                     StopHelper.TrailDynamicStop(t, candlesLookup, currentTime.Ticks);
                 }
-
-                if (t.StopPrices.Count > 100)
-                {
-
-                }
             }
         }
     }
