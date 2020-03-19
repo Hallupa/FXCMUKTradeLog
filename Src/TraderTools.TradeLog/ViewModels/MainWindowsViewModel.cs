@@ -35,7 +35,7 @@ namespace TraderTools.TradeLog.ViewModels
     {
         #region Fields
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        private readonly Action<Action<string, string>> _createLoginViewFunc;
+        private readonly Action<Action<string, string, string>> _createLoginViewFunc;
         private readonly Func<(Action<string> show, Action<string> updateText, Action close)> _createProgressingViewFunc;
         private FxcmBroker _fxcm;
 
@@ -60,7 +60,7 @@ namespace TraderTools.TradeLog.ViewModels
 
         #endregion
 
-        public MainWindowsViewModel(Action<Action<string, string>> createLoginViewFunc, Func<(Action<string> show, Action<string> updateText, Action close)> createProgressingViewFunc)
+        public MainWindowsViewModel(Action<Action<string, string, string>> createLoginViewFunc, Func<(Action<string> show, Action<string> updateText, Action close)> createProgressingViewFunc)
         {
             Log.Info("Application started");
 
@@ -140,7 +140,10 @@ namespace TraderTools.TradeLog.ViewModels
                         LargeChartTimeframe = SelectedTrade.Timeframe.Value;
                     }
 
-                    ViewTrade(SelectedTrade, _fxcm.Status == ConnectStatus.Connected);
+                    ViewTrade(
+                        SelectedTrade, 
+                        _fxcm.Status == ConnectStatus.Connected,
+                        txt => progressViewActions.updateText(txt));
 
                     _dispatcher.Invoke(() =>
                     {
@@ -318,42 +321,47 @@ namespace TraderTools.TradeLog.ViewModels
                     UpdateAccountCommand.RaiseCanExecuteChanged();
                     Log.Info("Trades updated");
                     SaveTrades();
+                });
 
-                    progressViewActions.updateText("Updating day candles...");
-                    var completed = 0;
-                    var total = 0;
+                progressViewActions.updateText("Updating day candles...");
+                var completed = 0;
+                var total = 0;
 
-                    // Update candles
-                    var updateCandles = new ProducerConsumer<string>(
-                        6,
-                        m =>
-                        {
-                            try
-                            {
-                                _candlesService.UpdateCandles(_brokersService.GetBroker("FXCM"), m, Timeframe.D1);
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.Error($"Unable to update market: {m}", ex);
-                            }
-
-                            Interlocked.Increment(ref completed);
-
-                            progressViewActions.updateText($"Updated day candles for {completed} of {total} markets");
-
-                            return ProducerConsumerActionResult.Success;
-                        });
-
-                    foreach (var market in _marketsService.GetAllMarketDetails())
+                // Update candles
+                var updateCandles = new ProducerConsumer<string>(
+                    6,
+                    m =>
                     {
-                        total++;
-                        updateCandles.Add(market.Name);
-                    }
+                        try
+                        {
+                            progressViewActions.updateText($"Updating candles for {m}");
+                            _candlesService.UpdateCandles(_brokersService.GetBroker("FXCM"),
+                                m, Timeframe.D1, forceUpdate: false);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error($"Unable to update market: {m}", ex);
+                        }
 
-                    updateCandles.SetProducerCompleted();
-                    updateCandles.Start();
-                    updateCandles.WaitUntilConsumersFinished();
+                        Interlocked.Increment(ref completed);
 
+                        progressViewActions.updateText($"Updated day candles for {completed} of {total} markets");
+
+                        return ProducerConsumerActionResult.Success;
+                    });
+
+                foreach (var market in _marketsService.GetAllMarketDetails())
+                {
+                    total++;
+                    updateCandles.Add(market.Name);
+                }
+
+                updateCandles.SetProducerCompleted();
+                updateCandles.Start();
+                updateCandles.WaitUntilConsumersFinished();
+
+                _dispatcher.Invoke(() =>
+                {
                     RefreshUI(true);
 
                     progressViewActions.close();
@@ -415,12 +423,22 @@ namespace TraderTools.TradeLog.ViewModels
             {
                 Trades.Clear();
 
+                // Add open trades at top
                 foreach (var trade in _account.Trades
-                    .Where(x => x.OrderDateTime != null || x.EntryDateTime != null)
-                    .OrderByDescending(x => int.Parse(x.Id)))
+                    .Where(x => x.CloseDateTime == null && (x.OrderDateTime != null || x.EntryDateTime != null))
+                    .OrderByDescending(x => x.OrderDateTime ?? x.EntryDateTime))
                 {
                     Trades.Add(trade);
                 }
+
+                // Add closed trades
+                foreach (var trade in _account.Trades
+                    .Where(x => x.CloseDateTime != null)
+                    .OrderByDescending(x => x.CloseDateTime.Value))
+                {
+                    Trades.Add(trade);
+                }
+
             }
 
             ResultsViewModel.UpdateResults();
@@ -448,14 +466,14 @@ namespace TraderTools.TradeLog.ViewModels
             {
                 var progressViewActions = _createProgressingViewFunc();
 
-                _createLoginViewFunc((username, password) =>
+                _createLoginViewFunc((username, password, connection) =>
                 {
                     Task.Run(() =>
                     {
                         try
                         {
                             loginAttempted = true;
-                            _fxcm.SetUsernamePassword(username, password);
+                            _fxcm.SetUsernamePassword(username, password, connection);
                             _fxcm.Connect();
 
                             if (_fxcm.Status == ConnectStatus.Connected)
@@ -490,7 +508,6 @@ namespace TraderTools.TradeLog.ViewModels
             {
                 var progressViewActions = _createProgressingViewFunc();
 
-                progressViewActions.show("Logging out...");
                 Task.Run(() =>
                 {
                     _fxcm.Disconnect();
@@ -502,6 +519,8 @@ namespace TraderTools.TradeLog.ViewModels
                         UpdateLoginButtonText();
                     });
                 });
+                
+                progressViewActions.show("Logging out...");
             }
 
             LoginOutButtonEnabled = true;

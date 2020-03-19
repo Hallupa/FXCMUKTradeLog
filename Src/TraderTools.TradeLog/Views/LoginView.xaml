@@ -4,11 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Login to FXCM" Height="150" Width="340" WindowStyle="SingleBorderWindow"
+        Title="Login to FXCM" Height="170" Width="340" WindowStyle="SingleBorderWindow"
         WindowStartupLocation="CenterOwner"
         FocusManager.FocusedElement="{Binding ElementName=UsernameTextBox}">
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -24,6 +25,9 @@
         <Label Grid.Row="1" Grid.Column="0" Margin="3">Password</Label>
         <PasswordBox Grid.Row="1" Grid.Column="1" Margin="3" PasswordChar="*" Name="txtPassword"/>
 
-        <Button Grid.Row="2" Grid.Column="1" Margin="3" IsDefault="True" Content="Login" Command="{Binding LoginCommand}" CommandParameter="{Binding ElementName=txtPassword}"/>
+        <Label Grid.Row="2" Grid.Column="0" Margin="3">Connection</Label>
+        <TextBox Grid.Row="2" Grid.Column="1" Margin="3" Text="{Binding Connection}"/>
+
+        <Button Grid.Row="3" Grid.Column="1" Margin="3" IsDefault="True" Content="Login" Command="{Binding LoginCommand}" CommandParameter="{Binding ElementName=txtPassword}"/>
     </Grid>
 </Window>

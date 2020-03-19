@@ -122,7 +122,7 @@ namespace TraderTools.TradeLog.ViewModels
             else if (_options.LimitOption == LimitOption.Original)
             {
                 if (t.OriginalTrade.LimitPrices.Count > 0 && t.LimitIndex + 1 < t.OriginalTrade.LimitPrices.Count &&
-                    (t.LimitIndex == -1 || t.LimitPrices[t.LimitIndex + 1].Date <= currentDateTime))
+                    (t.LimitIndex == -1 || t.OriginalTrade.LimitPrices[t.LimitIndex + 1].Date <= currentDateTime))
                 {
                     t.LimitIndex++;
                     var price = t.OriginalTrade.LimitPrices[t.LimitIndex].Price;

@@ -54,12 +54,19 @@ namespace TraderTools.TradeLog
                     },
                     txt =>
                     {
-                        dispatcher.BeginInvoke((Action)(() => { view.TextToShow.Text = txt; }));
+                        if (dispatcher.CheckAccess())
+                        {
+                            view.TextToShow.Text = txt;
+                        }
+                        else
+                        {
+                            dispatcher.BeginInvoke((Action) (() => { view.TextToShow.Text = txt; }));
+                        }
                     },
                     () => view.Close());
             };
 
-            Action<Action<string, string>> createLoginViewFunc = loginAction =>
+            Action<Action<string, string, string>> createLoginViewFunc = loginAction =>
             {
                 var view = new LoginView { Owner = this };
                 var loginVm = new LoginViewModel(() => view.Close(), loginAction);

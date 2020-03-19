@@ -295,7 +295,7 @@ namespace TraderTools.TradeLog.ViewModels
 
                     foreach (var t in trades)
                     {
-                        _tradeCalculatorService.RecalculateTrade(t, CalculateOptions.IncludeOpenTradesInRMultipleCalculation);
+                        _tradeCalculatorService.RecalculateTrade(t);
                         allTrades.Add(t);
                     }
 

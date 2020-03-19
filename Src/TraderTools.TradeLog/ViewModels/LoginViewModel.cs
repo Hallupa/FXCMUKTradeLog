@@ -7,9 +7,9 @@ namespace TraderTools.TradeLog.ViewModels
     public class LoginViewModel
     {
         private readonly Action _closeViewAction;
-        private readonly Action<string, string> _loginAction;
+        private readonly Action<string, string, string> _loginAction;
 
-        public LoginViewModel(Action closeViewAction, Action<string, string> loginAction)
+        public LoginViewModel(Action closeViewAction, Action<string, string, string> loginAction)
         {
             Username = Properties.Settings.Default.Username;
             
@@ -22,6 +22,8 @@ namespace TraderTools.TradeLog.ViewModels
 
         public string Username { get; set; }
 
+        public string Connection { get; set; } = "GBREAL";
+
         private void Login(object obj)
         {
             var passwordBox = (PasswordBox)obj;
@@ -31,7 +33,7 @@ namespace TraderTools.TradeLog.ViewModels
             Properties.Settings.Default.Username = Username;
             Properties.Settings.Default.Save();
 
-            _loginAction(Username, password);
+            _loginAction(Username, password, Connection);
         }
     }
 }
